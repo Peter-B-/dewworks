@@ -1,5 +1,5 @@
-#ifndef _SENSORS_h
-#define _SENSORS_h
+#ifndef _Hardware_h
+#define _Hardware_h
 
 #include "Types.h"
 
@@ -12,12 +12,12 @@ class DhtSensor
 public:
     DhtSensor(uint8_t pin);
     void begin();
-    Measurement measure();
+    SensorMeasurement measure();
 private:
     DHT_Unified dht;
     float getTemperature();
     float getHumidity();
-    static void setDewTemperature(Measurement& meas);
+    static void setDewTemperature(SensorMeasurement& meas);
 };
 
 class Relais

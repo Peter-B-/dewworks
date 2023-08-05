@@ -1,15 +1,17 @@
-
+#include <EEPROM.h>
 #include <avr/wdt.h>
 
 #include <Wire.h>
 #include <hd44780.h>
 #include <hd44780ioClass/hd44780_I2Cexp.h>
 
+
 #include <Encoder.h>
 #include <EasyButton.h>
 
 #include "Types.h"
-#include "Sensors.h"
+#include "Hardware.h"
+#include "Control.h"
 
 const int LCD_COLS = 16;
 const int LCD_ROWS = 2;
@@ -26,12 +28,22 @@ DhtSensor dhtIn(6);
 DhtSensor dhtOut(7);
 Relais relais(8);
 
+ControlLogic control;
+
 void setup()
 {
     wdt_enable(WDTO_2S); // Set watchdog to 2 seconds
 
     Serial.begin(115200);
     Serial.println("Starting");
+
+    Config config;
+    EEPROM.get(0, config);
+    if (isnanf(config.DeltaDewTempMin))
+        config = control.getDefaultConfig();
+    print(config);
+
+    control.begin(config);
 
     auto status = lcd.begin(LCD_COLS, LCD_ROWS);
     if (status)
@@ -65,7 +77,44 @@ void onPressed()
     Serial.println("Button has been pressed!");
 }
 
-Measurement measIn{}, measOut{};
+
+void formatNumber(float input, byte columns, byte places)
+{
+  char buffer[20];
+  dtostrf(input, columns, places, buffer);
+  Serial.print(buffer);
+}
+
+void print(Config &config)
+{
+    Serial.println();
+    Serial.println("Configuration");
+    Serial.print("DeltaDewTempMin  ");
+    formatNumber(config.DeltaDewTempMin, 8, 1);
+    Serial.println(" °C");
+    Serial.print("DeltaDewTempHyst ");
+    formatNumber(config.DeltaDewTempHyst, 8, 1);
+    Serial.println(" °C");
+    Serial.print("HumInMin         ");
+    formatNumber(config.HumInMin, 8, 0);
+    Serial.println(" %");
+    Serial.print("HumInHyst        ");
+    formatNumber(config.HumInHyst, 8, 0);
+    Serial.println(" %p");
+    Serial.print("TempInMin        ");
+    formatNumber(config.TempInMin, 8, 1);
+    Serial.println(" °C");
+    Serial.print("TempOutMin       ");
+    formatNumber(config.TempOutMin, 8, 1);
+    Serial.println(" °C");
+    Serial.print("TempHyst         ");
+    formatNumber(config.TempHyst, 8, 1);
+    Serial.println(" °C");
+    Serial.println();
+}
+
+
+Measurement measurement{};
 
 void loop()
 {
@@ -78,22 +127,27 @@ void loop()
     {
         lastMs_check = millis();
 
-        measIn = dhtIn.measure();
-        measOut = dhtOut.measure();
+        measurement.Inside = dhtIn.measure();
+        measurement.Outside = dhtOut.measure();
+
+        auto output = control.update(measurement);
+        relais.set(output);
 
         lcd.setCursor(0, 0);
         lcd.print("Innen  ");
         lcd.write((uint8_t)1);
-        lcd.print(measIn.DewTemperature, 1);
+        lcd.print(measurement.Inside.DewTemperature, 1);
         lcd.write((uint8_t)0);
 
 
         lcd.setCursor(0, 1);
-        lcd.print(measIn.Temperature, 1);
+        lcd.print(measurement.Inside.Temperature, 1);
         lcd.write((uint8_t)0);
         lcd.write(" ");
-        lcd.print(measIn.Humidity, 0);
+        lcd.print(measurement.Inside.Humidity, 0);
         lcd.print("% ");
+
+
     }
 
     if (newPosition != oldPosition)

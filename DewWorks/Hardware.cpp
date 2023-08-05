@@ -1,4 +1,4 @@
-#include "Sensors.h"
+#include "Hardware.h"
 
 void DhtSensor::begin()
 {
@@ -19,9 +19,9 @@ float DhtSensor::getHumidity()
     return event.relative_humidity;
 }
 
-Measurement DhtSensor::measure()
+SensorMeasurement DhtSensor::measure()
 {
-    auto meas = Measurement();
+    auto meas = SensorMeasurement();
 
     meas.Temperature = getTemperature();
     meas.Humidity = getHumidity();
@@ -31,7 +31,7 @@ Measurement DhtSensor::measure()
     return meas;
 }
 
-void DhtSensor::setDewTemperature(Measurement &meas)
+void DhtSensor::setDewTemperature(SensorMeasurement &meas)
 {
     if (isnanf(meas.Temperature) || isnanf(meas.Humidity))
         meas.DewTemperature = NAN;
