@@ -1,17 +1,14 @@
 #include <EEPROM.h>
 #include <avr/wdt.h>
 
-#include <Wire.h>
-#include <hd44780.h>
-#include <hd44780ioClass/hd44780_I2Cexp.h>
-
-
 #include <Encoder.h>
 #include <EasyButton.h>
 
 #include "Types.h"
 #include "Hardware.h"
 #include "Control.h"
+#include "Display.h"
+#include "Tools.h"
 
 const int LCD_COLS = 16;
 const int LCD_ROWS = 2;
@@ -22,13 +19,15 @@ const int SW = 4;
 
 Encoder encoder(DT, CLK);
 EasyButton button(SW);
-hd44780_I2Cexp lcd;
 
 DhtSensor dhtIn(6);
 DhtSensor dhtOut(7);
 Relais relais(8);
+Display display;
 
 ControlLogic control;
+
+Timer timerMeasure(500);
 
 void setup()
 {
@@ -44,27 +43,17 @@ void setup()
     print(config);
 
     control.begin(config);
-
-    auto status = lcd.begin(LCD_COLS, LCD_ROWS);
-    if (status)
-        hd44780::fatalError(status);
-
-    byte deg[8] = {B00111, B00101, B00111, B0000, B00000, B00000, B00000, B00000}; // character °
-    lcd.createChar(0, deg);
-    byte tau[8] = {B00000, B00000, B00000, B11111, B00100, B00100, B00100, B00110}; // character tau
-    lcd.createChar(1, tau);
-
+ 
     dhtIn.begin();
     dhtOut.begin();
     relais.begin();
+    display.begin();
 
     button.begin();
     button.onPressedFor(500, onPressedForDuration);
     button.onPressed(onPressed);
 }
 
-unsigned int period_check = 2000;
-unsigned long lastMs_check = -600;
 
 long oldPosition = -999;
 
@@ -118,43 +107,42 @@ Measurement measurement{};
 
 void loop()
 {
+    auto now = millis();
     wdt_reset(); // Watchdog zurücksetzen
 
     button.read();
     long newPosition = encoder.read();
 
-    if (millis() - lastMs_check > period_check)
+    if (timerMeasure.ShouldRun(now))
     {
-        lastMs_check = millis();
-
         measurement.Inside = dhtIn.measure();
         measurement.Outside = dhtOut.measure();
 
         auto output = control.update(measurement);
         relais.set(output);
 
-        lcd.setCursor(0, 0);
-        lcd.print("Innen  ");
-        lcd.write((uint8_t)1);
-        lcd.print(measurement.Inside.DewTemperature, 1);
-        lcd.write((uint8_t)0);
-
-
-        lcd.setCursor(0, 1);
-        lcd.print(measurement.Inside.Temperature, 1);
-        lcd.write((uint8_t)0);
-        lcd.write(" ");
-        lcd.print(measurement.Inside.Humidity, 0);
-        lcd.print("% ");
-
-
+        display.setMeasurement(measurement);
     }
 
     if (newPosition != oldPosition)
     {
         oldPosition = newPosition;
-        Serial.println(newPosition);
-        relais.set(newPosition % 4 == 0);
+
+        char lcdBuffer[20];
+        for (size_t i = 0; i < 16; i++)
+        {
+            lcdBuffer[i]='_';
+        }
+        lcdBuffer[16]='\0';
+
+        auto c = dtostrf(newPosition * 5.1, 5, 1, lcdBuffer + 4 );
+        Serial.println(lcdBuffer);
+        Serial.println(c);
+
+
+
     }
+
+    display.update();
 }
 
