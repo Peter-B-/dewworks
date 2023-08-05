@@ -4,12 +4,24 @@
 struct SensorMeasurement{
     float Temperature{};
     float Humidity{};
-    float DewTemperature{};
 };
 
 struct Measurement{
     SensorMeasurement Inside{};
     SensorMeasurement Outside{};
+};
+
+struct EnvironmentInfo
+{
+    float Temperature{};
+    float Humidity{};
+    float DewPointTemperature{};
+};
+
+struct ControlInput
+{
+    EnvironmentInfo Inside{};
+    EnvironmentInfo Outside{};
 };
 
 struct Config{
@@ -22,6 +34,11 @@ struct Config{
     float TempInMin{10};
     float TempOutMin{-10};
     float TempHyst{1};
+
+    float TempInOffset{0};
+    float TempOutOffset{0};
+    float HumInOffset{0};
+    float HumOutOffset{0};
 };
 
 #endif

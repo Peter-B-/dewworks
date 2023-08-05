@@ -14,15 +14,21 @@ public:
     Display();
     void begin();
     void update();
-    void setMeasurement(Measurement meas);
+    void setMeasurement(ControlInput ci);
+
+    void lightOn();
 private:
     hd44780_I2Cexp lcd;
-    Measurement currentMeas;
+    ControlInput currentMeas;
     Timer timer;
     char lcdBuffer[40];
     char numberBuffer[10];
-    void showMeasurement(String id, SensorMeasurement meas);
 
+    void showMeasurement(char *id, EnvironmentInfo  envInfo);
+    void clearBuffer();
+    
+    bool lightIsOn = true;
+    unsigned long lightOnTime;
 };
 
 #endif

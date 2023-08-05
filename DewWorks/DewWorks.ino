@@ -63,7 +63,7 @@ void onPressedForDuration()
 }
 void onPressed()
 {
-    Serial.println("Button has been pressed!");
+    display.lightOn();
 }
 
 
@@ -100,6 +100,19 @@ void print(Config &config)
     formatNumber(config.TempHyst, 8, 1);
     Serial.println(" °C");
     Serial.println();
+    Serial.print("TempInOffset     ");
+    formatNumber(config.TempInOffset, 8, 1);
+    Serial.println(" °C");
+    Serial.print("TempOutOffset    ");
+    formatNumber(config.TempOutOffset, 8, 1);
+    Serial.println(" °C");
+    Serial.print("HumInOffset      ");
+    formatNumber(config.HumInOffset, 8, 1);
+    Serial.println(" °C");
+    Serial.print("HumOutOffset     ");
+    formatNumber(config.HumOutOffset, 8, 1);
+    Serial.println(" °C");
+    Serial.println();
 }
 
 
@@ -118,29 +131,18 @@ void loop()
         measurement.Inside = dhtIn.measure();
         measurement.Outside = dhtOut.measure();
 
-        auto output = control.update(measurement);
+        auto controlInput = control.setMeasurement(measurement);
+
+        auto output = control.update();
         relais.set(output);
 
-        display.setMeasurement(measurement);
+        display.setMeasurement(controlInput);
     }
 
     if (newPosition != oldPosition)
     {
+        display.lightOn();
         oldPosition = newPosition;
-
-        char lcdBuffer[20];
-        for (size_t i = 0; i < 16; i++)
-        {
-            lcdBuffer[i]='_';
-        }
-        lcdBuffer[16]='\0';
-
-        auto c = dtostrf(newPosition * 5.1, 5, 1, lcdBuffer + 4 );
-        Serial.println(lcdBuffer);
-        Serial.println(c);
-
-
-
     }
 
     display.update();

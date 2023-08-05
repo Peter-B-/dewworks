@@ -1,6 +1,6 @@
 #include "Display.h"
 
-Display::Display():timer(200)
+Display::Display() : timer(300)
 {
 }
 
@@ -27,37 +27,72 @@ void Display::update()
             showMeasurement("Innen", this->currentMeas.Inside);
         else
             showMeasurement("Aussen", this->currentMeas.Outside);
+
+        if (lightIsOn && now -lightOnTime > 3000)
+        {
+            lcd.noBacklight();
+            lightIsOn = false;
+        }
     }
 }
 
-void Display::setMeasurement(Measurement meas)
+void Display::setMeasurement(ControlInput meas)
 {
     this->currentMeas = meas;
 }
 
-void Display::showMeasurement(String id, SensorMeasurement meas)
+void Display::lightOn()
 {
+    lcd.backlight();
+    lightIsOn = true;
+    lightOnTime = millis();
+}
 
-    // for (size_t i = 0; i < 16; i++)
-    // {
-    //     lcdBuffer[i]='_';
-    // }
+void printNumber(char *dest, float no, int8_t digitsBeforeDot, int8_t digitsAfterDot)
+{
+    char buffer[20];
+
+    int8_t size;
+    if (digitsAfterDot == 0)
+        size = digitsBeforeDot;
+    else
+        size = digitsBeforeDot + digitsAfterDot + 1;
+
+    dtostrf(no, size, digitsAfterDot, buffer);
+    strncpy(dest, buffer, size);
+}
+
+void Display::showMeasurement(char *id, EnvironmentInfo ei)
+{
+    clearBuffer();
+
+    strncpy(lcdBuffer, id, strlen(id));
+    printNumber(lcdBuffer + 9, ei.DewPointTemperature, 3, 1);
+    lcdBuffer[8] = 1;
+    lcdBuffer[14] = 0;
+    lcdBuffer[15] = 'C';
+
+    lcd.setCursor(0, 0);
+    lcd.write(lcdBuffer, 16);
+
+    clearBuffer();
+
+    lcdBuffer[0] = 'r';
+    lcdBuffer[1] = 'H';
+    printNumber(lcdBuffer + 2, ei.Humidity, 3, 0);
+    lcdBuffer[5] = '%';
+
+    lcdBuffer[8] = 'T';
+    printNumber(lcdBuffer + 9, ei.Temperature, 3, 1);
+    lcdBuffer[14] = 0;
+    lcdBuffer[15] = 'C';
     
-
-    // lcd.setCursor(0, 0);
-    // dtostrf(-meas.DewTemperature, 5, 1, lcdBuffer + 4 );
-    // lcd.print(lcdBuffer);
-    // Serial.println(lcdBuffer);
-
-    
-    lcd.write((uint8_t)1);
-    lcd.print( meas.DewTemperature, 1);
-    lcd.write((uint8_t)0);
-
     lcd.setCursor(0, 1);
-    lcd.print(meas.Temperature, 1);
-    lcd.write((uint8_t)0);
-    lcd.write(" ");
-    lcd.print(meas.Humidity, 0);
-    lcd.print("% ");
+    lcd.write(lcdBuffer, 16);
+}
+
+void Display::clearBuffer()
+{
+    for (size_t i = 0; i < 16; i++)
+        lcdBuffer[i] = ' ';
 }

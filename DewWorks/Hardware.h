@@ -17,7 +17,6 @@ private:
     DHT_Unified dht;
     float getTemperature();
     float getHumidity();
-    static void setDewTemperature(SensorMeasurement& meas);
 };
 
 class Relais
