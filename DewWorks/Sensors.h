@@ -20,4 +20,14 @@ private:
     static void setDewTemperature(Measurement& meas);
 };
 
+class Relais
+{
+public:
+    Relais(uint8_t pin);
+    void begin();
+    void set(bool on);
+private:
+    uint8_t pin;
+};
+
 #endif

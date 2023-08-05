@@ -24,6 +24,7 @@ hd44780_I2Cexp lcd;
 
 DhtSensor dhtIn(6);
 DhtSensor dhtOut(7);
+Relais relais(8);
 
 void setup()
 {
@@ -43,6 +44,7 @@ void setup()
 
     dhtIn.begin();
     dhtOut.begin();
+    relais.begin();
 
     button.begin();
     button.onPressedFor(500, onPressedForDuration);
@@ -63,6 +65,8 @@ void onPressed()
     Serial.println("Button has been pressed!");
 }
 
+Measurement measIn{}, measOut{};
+
 void loop()
 {
     wdt_reset(); // Watchdog zurücksetzen
@@ -74,8 +78,8 @@ void loop()
     {
         lastMs_check = millis();
 
-        auto measIn = dhtIn.measure();
-        auto measOut = dhtOut.measure();
+        measIn = dhtIn.measure();
+        measOut = dhtOut.measure();
 
         lcd.setCursor(0, 0);
         lcd.print("Innen  ");
@@ -96,6 +100,7 @@ void loop()
     {
         oldPosition = newPosition;
         Serial.println(newPosition);
+        relais.set(newPosition % 4 == 0);
     }
 }
 

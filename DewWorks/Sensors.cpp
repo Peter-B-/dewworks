@@ -75,3 +75,19 @@ DhtSensor::DhtSensor(uint8_t pin)
 float dewPoint(float t, float r)
 {
 }
+
+Relais::Relais(uint8_t pin)
+{
+    this->pin=pin;
+}
+
+void Relais::begin()
+{
+    pinMode(this->pin, OUTPUT);
+}
+
+void Relais::set(bool on)
+{
+    digitalWrite(LED_BUILTIN, on);
+    digitalWrite(this->pin, on);
+}
