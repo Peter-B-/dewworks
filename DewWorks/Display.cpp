@@ -21,14 +21,7 @@ void Display::update(long rotaryPos)
     auto now = millis();
     if (timer.ShouldRun(now))
     {
-        int page = (now / 3000) % 2;
-
-        if (page == 0)
-            showMeasurement("Innen", this->currentMeas.Inside);
-        else
-            showMeasurement("Aussen", this->currentMeas.Outside);
-
-        if (lightIsOn && now -lightOnTime > lightOnLimit)
+        if (lightIsOn && now - lightOnTime > lightOnLimit)
         {
             lcd.noBacklight();
             lightIsOn = false;
@@ -39,6 +32,15 @@ void Display::update(long rotaryPos)
     {
         lastRotaryPos = rotaryPos;
         lightOn();
+
+        if (mode == DisplayMode::Measurement)
+        {
+            int page = rotaryPos % 3;
+            if (page == 0)
+                showMeasurement("Innen", this->currentMeas.Inside);
+            else
+                showMeasurement("Aussen", this->currentMeas.Outside);
+        }
 
         Serial.println(rotaryPos);
     }
@@ -104,7 +106,7 @@ void Display::showMeasurement(char *id, EnvironmentInfo ei)
     printNumber(lcdBuffer + 9, ei.Temperature, 3, 1);
     lcdBuffer[14] = 0;
     lcdBuffer[15] = 'C';
-    
+
     lcd.setCursor(0, 1);
     lcd.write(lcdBuffer, 16);
 }

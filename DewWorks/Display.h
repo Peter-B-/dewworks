@@ -8,6 +8,14 @@
 #include <hd44780.h>
 #include <hd44780ioClass/hd44780_I2Cexp.h>
 
+namespace DisplayMode{
+    enum Mode{
+        Measurement,
+        Menu,
+        ValueChange
+    };
+}
+
 class Display
 {
 public:
@@ -34,7 +42,10 @@ private:
     unsigned long lightOnTime;
     unsigned long lightOnLimit = 15000;
 
-    long lastRotaryPos=0;
+    long lastRotaryPos=-1;
+    DisplayMode::Mode mode = DisplayMode::Measurement;
 };
+
+
 
 #endif
