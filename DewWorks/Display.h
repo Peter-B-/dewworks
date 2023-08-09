@@ -19,17 +19,17 @@ namespace DisplayMode{
 class Display
 {
 public:
-    Display();
+    Display(State &state);
     void begin();
     void update(long rotaryPos);
-    void setMeasurement(ControlInput ci);
 
     void buttonPressed();
     void buttonPressedLong();
     
 private:
+    State &state;
+
     hd44780_I2Cexp lcd;
-    ControlInput currentMeas;
     Timer timer;
     char lcdBuffer[40];
     char numberBuffer[10];

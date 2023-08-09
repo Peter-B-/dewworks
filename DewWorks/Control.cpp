@@ -2,66 +2,71 @@
 
 #include "arduino.h"
 
+ControlLogic::ControlLogic(State &state) : state(state)
+{
+}
+
 void ControlLogic::begin(Config config)
 {
     setConfig(config);
 }
 
-bool ControlLogic::getState()
-{
-    return this->state;
-}
-
-
-
 bool ControlLogic::update()
 {
-    float deltaDewTemp = currentInput.Inside.DewPointTemperature - currentInput.Outside.DewPointTemperature;
-    if (isnanf(deltaDewTemp))
-        this->state = false;
 
+    
+    bool output = state.Output.State;
+
+    ControlInput &inp = state.Input;
+    float deltaDewTemp = inp.Inside.DewPointTemperature - inp.Outside.DewPointTemperature;
+    if (isnanf(deltaDewTemp))
+    {
+        output = false;
+    }
     if (
         deltaDewTemp > (config.DeltaDewTempMin + config.DeltaDewTempHyst) &&
-        currentInput.Inside.Temperature > (config.TempInMin + config.TempHyst) &&
-        currentInput.Outside.Temperature > (config.TempOutMin + config.TempHyst) &&
-        currentInput.Inside.Humidity > (config.HumInMin + config.HumInHyst))
+        inp.Inside.Temperature > (config.TempInMin + config.TempHyst) &&
+        inp.Outside.Temperature > (config.TempOutMin + config.TempHyst) &&
+        inp.Inside.Humidity > (config.HumInMin + config.HumInHyst))
     {
-        if (!this->state)
+        if (!output)
             Serial.println("Schalte an");
-        this->state = true;
+        output = true;
     }
-    if (deltaDewTemp < config.DeltaDewTempMin)
+    else if (!output)
     {
-        if (this->state)
-            Serial.println("Schalte ab wegen Taupunkt");
-        this->state = false;
+        // Already switched off.
     }
-    if (currentInput.Inside.Temperature < config.TempInMin)
+    else if (deltaDewTemp < config.DeltaDewTempMin)
     {
-        if (this->state)
-            Serial.println("Schalte ab wegen Innentemperatur");
-        this->state = false;
+        Serial.println("Schalte ab wegen Taupunkt");
+        output = false;
     }
-    if (currentInput.Outside.Temperature < config.TempOutMin)
+    else if (inp.Inside.Temperature < config.TempInMin)
     {
-        if (this->state)
-            Serial.println("Schalte ab wegen Aussentemperatur");
-        this->state = false;
+        Serial.println("Schalte ab wegen Innentemperatur");
+        output = false;
     }
-    if (currentInput.Inside.Humidity < config.HumInMin)
+    else if (inp.Outside.Temperature < config.TempOutMin)
     {
-        if (this->state)
-            Serial.println("Schalte ab wegen Luftfeuchte");
-        this->state = false;
+        Serial.println("Schalte ab wegen Aussentemperatur");
+        output = false;
+    }
+    else if (inp.Inside.Humidity < config.HumInMin)
+    {
+        Serial.println("Schalte ab wegen Luftfeuchte");
+        output = false;
     }
 
-    return this->state;
+    state.Output.State = output;
+    return output;
 }
 
 void ControlLogic::setConfig(Config config)
 {
     this->config = config;
 }
+
 
 void setDewTemperature(EnvironmentInfo &envInfo)
 {
@@ -99,24 +104,18 @@ void setDewTemperature(EnvironmentInfo &envInfo)
     envInfo.DewPointTemperature = tt;
 }
 
-
-ControlInput ControlLogic::setMeasurement(Measurement& meas)
+void ControlLogic::setMeasurement(Measurement &meas)
 {
-    currentInput.Inside.Temperature = meas.Inside.Temperature + config.TempInOffset;
-    currentInput.Inside.Humidity = meas.Inside.Humidity + config.HumInOffset;
-    currentInput.Outside.Temperature = meas.Outside.Temperature + config.TempOutOffset;
-    currentInput.Outside.Humidity = meas.Outside.Humidity + config.HumOutOffset;
+    state.Input.Inside.Temperature = meas.Inside.Temperature + config.TempInOffset;
+    state.Input.Inside.Humidity = meas.Inside.Humidity + config.HumInOffset;
+    state.Input.Outside.Temperature = meas.Outside.Temperature + config.TempOutOffset;
+    state.Input.Outside.Humidity = meas.Outside.Humidity + config.HumOutOffset;
 
-    setDewTemperature(currentInput.Inside);
-    setDewTemperature(currentInput.Outside);
-
-    return this->currentInput;
+    setDewTemperature(state.Input.Inside);
+    setDewTemperature(state.Input.Outside);
 }
-
 
 Config ControlLogic::getDefaultConfig()
 {
     return Config();
 }
-
-

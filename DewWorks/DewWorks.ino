@@ -26,9 +26,12 @@ EasyButton button(SW);
 DhtSensor dhtIn(SENSOR_IN);
 DhtSensor dhtOut(SENSOR_OUT);
 Relais relais(RELAIS);
-Display display;
 
-ControlLogic control;
+Measurement measurement{};
+State state;
+
+Display display(state);
+ControlLogic control(state);
 
 Timer timerMeasure(500);
 
@@ -114,7 +117,6 @@ void print(Config &config)
     Serial.println();
 }
 
-Measurement measurement{};
 
 void loop()
 {
@@ -129,12 +131,9 @@ void loop()
         measurement.Inside = dhtIn.measure();
         measurement.Outside = dhtOut.measure();
 
-        auto controlInput = control.setMeasurement(measurement);
-
-        auto output = control.update();
+        control.setMeasurement(measurement);
+        bool output = control.update();
         relais.set(output);
-
-        display.setMeasurement(controlInput);
     }
 
     display.update(newPosition);

@@ -1,6 +1,6 @@
 #include "Display.h"
 
-Display::Display() : timer(300)
+Display::Display(State &state) : timer(300), state(state)
 {
 }
 
@@ -19,7 +19,8 @@ void Display::begin()
 void Display::update(long rotaryPos)
 {
     auto now = millis();
-    if (timer.ShouldRun(now))
+    bool shouldRefresh = timer.ShouldRun(now);
+    if (shouldRefresh)
     {
         if (lightIsOn && now - lightOnTime > lightOnLimit)
         {
@@ -28,7 +29,7 @@ void Display::update(long rotaryPos)
         }
     }
 
-    if (rotaryPos != lastRotaryPos)
+    if (rotaryPos != lastRotaryPos || shouldRefresh)
     {
         lastRotaryPos = rotaryPos;
         lightOn();
@@ -37,18 +38,13 @@ void Display::update(long rotaryPos)
         {
             int page = rotaryPos % 3;
             if (page == 0)
-                showMeasurement("Innen", this->currentMeas.Inside);
+                showMeasurement("Innen", this->state.Input.Inside);
             else
-                showMeasurement("Aussen", this->currentMeas.Outside);
+                showMeasurement("Aussen", this->state.Input.Outside);
         }
 
         Serial.println(rotaryPos);
     }
-}
-
-void Display::setMeasurement(ControlInput meas)
-{
-    this->currentMeas = meas;
 }
 
 void Display::buttonPressed()

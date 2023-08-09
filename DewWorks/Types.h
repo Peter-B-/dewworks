@@ -24,6 +24,18 @@ struct ControlInput
     EnvironmentInfo Outside{};
 };
 
+struct ControlOutput
+{
+    bool State{};
+    char Reason[20]{};
+};
+
+struct State
+{
+    ControlInput Input{};
+    ControlOutput Output{};
+};
+
 struct Config{
     float DeltaDewTempMin{5};
     float DeltaDewTempHyst{1};

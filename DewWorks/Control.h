@@ -6,17 +6,18 @@
 class ControlLogic
 {
 public:
+    ControlLogic(State &state);
+
     void begin(Config config);
     bool getState();
     bool update();
     void setConfig(Config config);
-    ControlInput setMeasurement(Measurement &meas);
+    void setMeasurement(Measurement &meas);
 
     static Config getDefaultConfig();
 private:
-    bool state = false;
+    State &state;
     Config config;
-    ControlInput currentInput;
 };
 
 #endif
