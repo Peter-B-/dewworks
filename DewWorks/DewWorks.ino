@@ -46,35 +46,31 @@ void setup()
     print(config);
 
     control.begin(config);
- 
+
     dhtIn.begin();
     dhtOut.begin();
     relais.begin();
     display.begin();
 
     button.begin();
-    button.onPressedFor(500, onPressedForDuration);
+    button.onPressedFor(500, onPressedLong);
     button.onPressed(onPressed);
 }
 
-
-long oldPosition = -999;
-
-void onPressedForDuration()
+void onPressedLong()
 {
-    Serial.println("Button has been pressed for the given duration!");
+    display.buttonPressedLong();
 }
 void onPressed()
 {
-    display.lightOn();
+    display.buttonPressed();
 }
-
 
 void formatNumber(float input, byte columns, byte places)
 {
-  char buffer[20];
-  dtostrf(input, columns, places, buffer);
-  Serial.print(buffer);
+    char buffer[20];
+    dtostrf(input, columns, places, buffer);
+    Serial.print(buffer);
 }
 
 void print(Config &config)
@@ -118,7 +114,6 @@ void print(Config &config)
     Serial.println();
 }
 
-
 Measurement measurement{};
 
 void loop()
@@ -127,7 +122,7 @@ void loop()
     wdt_reset(); // Watchdog zurücksetzen
 
     button.read();
-    long newPosition = encoder.read();
+    long newPosition = -encoder.read() >> 2;
 
     if (timerMeasure.ShouldRun(now))
     {
@@ -142,14 +137,5 @@ void loop()
         display.setMeasurement(controlInput);
     }
 
-    if (newPosition != oldPosition)
-    {
-        display.lightOn();
-        oldPosition = newPosition;
-
-        Serial.println(newPosition);
-    }
-
-    display.update();
+    display.update(newPosition);
 }
-

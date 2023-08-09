@@ -16,7 +16,7 @@ void Display::begin()
     lcd.createChar(1, tau);
 }
 
-void Display::update()
+void Display::update(long rotaryPos)
 {
     auto now = millis();
     if (timer.ShouldRun(now))
@@ -34,11 +34,29 @@ void Display::update()
             lightIsOn = false;
         }
     }
+
+    if (rotaryPos != lastRotaryPos)
+    {
+        lastRotaryPos = rotaryPos;
+        lightOn();
+
+        Serial.println(rotaryPos);
+    }
 }
 
 void Display::setMeasurement(ControlInput meas)
 {
     this->currentMeas = meas;
+}
+
+void Display::buttonPressed()
+{
+    Serial.println("Short press");
+}
+
+void Display::buttonPressedLong()
+{
+    Serial.println("Long press");
 }
 
 void Display::lightOn()
