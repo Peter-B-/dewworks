@@ -1,8 +1,8 @@
 #include <EEPROM.h>
 #include <avr/wdt.h>
 
-#include <Encoder.h>
-#include <EasyButton.h>
+#include <Encoder.h>    // library Encoder
+#include <EasyButton.h> // library EasyButton
 
 #include "Types.h"
 #include "Hardware.h"
@@ -16,13 +16,16 @@ const int LCD_ROWS = 2;
 const int CLK = 3;
 const int DT = 2;
 const int SW = 4;
+const int RELAIS = 8;
+const int SENSOR_IN = 6;
+const int SENSOR_OUT = 7;
 
 Encoder encoder(DT, CLK);
 EasyButton button(SW);
 
-DhtSensor dhtIn(6);
-DhtSensor dhtOut(7);
-Relais relais(8);
+DhtSensor dhtIn(SENSOR_IN);
+DhtSensor dhtOut(SENSOR_OUT);
+Relais relais(RELAIS);
 Display display;
 
 ControlLogic control;
