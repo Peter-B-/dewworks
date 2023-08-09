@@ -9,12 +9,12 @@ ControlLogic::ControlLogic(State &state) : state(state)
 void ControlLogic::begin(Config config)
 {
     setConfig(config);
+    strcpy(state.Output.Reason, "Noch aus");
 }
 
 bool ControlLogic::update()
 {
 
-    
     bool output = state.Output.State;
 
     ControlInput &inp = state.Input;
@@ -22,6 +22,7 @@ bool ControlLogic::update()
     if (isnanf(deltaDewTemp))
     {
         output = false;
+        strcpy(state.Output.Reason, "keine Daten");
     }
     if (
         deltaDewTemp > (config.DeltaDewTempMin + config.DeltaDewTempHyst) &&
@@ -29,9 +30,8 @@ bool ControlLogic::update()
         inp.Outside.Temperature > (config.TempOutMin + config.TempHyst) &&
         inp.Inside.Humidity > (config.HumInMin + config.HumInHyst))
     {
-        if (!output)
-            Serial.println("Schalte an");
         output = true;
+        strcpy(state.Output.Reason, "An");
     }
     else if (!output)
     {
@@ -39,23 +39,23 @@ bool ControlLogic::update()
     }
     else if (deltaDewTemp < config.DeltaDewTempMin)
     {
-        Serial.println("Schalte ab wegen Taupunkt");
         output = false;
+        strcpy(state.Output.Reason, "Taupunkt");
     }
     else if (inp.Inside.Temperature < config.TempInMin)
     {
-        Serial.println("Schalte ab wegen Innentemperatur");
         output = false;
+        strcpy(state.Output.Reason, "Innentemp");
     }
     else if (inp.Outside.Temperature < config.TempOutMin)
     {
-        Serial.println("Schalte ab wegen Aussentemperatur");
         output = false;
+        strcpy(state.Output.Reason, "Aussentemp");
     }
     else if (inp.Inside.Humidity < config.HumInMin)
     {
-        Serial.println("Schalte ab wegen Luftfeuchte");
         output = false;
+        strcpy(state.Output.Reason, "Luftfeuchte");
     }
 
     state.Output.State = output;
@@ -66,7 +66,6 @@ void ControlLogic::setConfig(Config config)
 {
     this->config = config;
 }
-
 
 void setDewTemperature(EnvironmentInfo &envInfo)
 {

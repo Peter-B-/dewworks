@@ -20,6 +20,8 @@ void Display::update(long rotaryPos)
 {
     auto now = millis();
     bool shouldRefresh = timer.ShouldRun(now);
+    bool rotated = rotaryPos != lastRotaryPos;
+
     if (shouldRefresh)
     {
         if (lightIsOn && now - lightOnTime > lightOnLimit)
@@ -29,21 +31,35 @@ void Display::update(long rotaryPos)
         }
     }
 
-    if (rotaryPos != lastRotaryPos || shouldRefresh)
+    if (rotated)
     {
         lastRotaryPos = rotaryPos;
         lightOn();
 
+        Serial.println(rotaryPos);
+    }
+
+    if (rotated || shouldRefresh)
+    {
         if (mode == DisplayMode::Measurement)
         {
             int page = rotaryPos % 3;
             if (page == 0)
                 showMeasurement("Innen", this->state.Input.Inside);
-            else
+            else if (page == 1)
                 showMeasurement("Aussen", this->state.Input.Outside);
+            else
+            {
+                clearBuffer();
+                lcd.setCursor(0, 0);
+                lcd.write(lcdBuffer, 16);
+
+                strncpy(lcdBuffer, state.Output.Reason, strlen(state.Output.Reason));
+                lcd.setCursor(0, 1);
+                lcd.write(lcdBuffer, 16);
+            }
         }
 
-        Serial.println(rotaryPos);
     }
 }
 
