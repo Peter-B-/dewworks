@@ -146,6 +146,8 @@ void loop()
     {
         display.lightOn();
         oldPosition = newPosition;
+
+        Serial.println(newPosition);
     }
 
     display.update();

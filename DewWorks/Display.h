@@ -29,6 +29,7 @@ private:
     
     bool lightIsOn = true;
     unsigned long lightOnTime;
+    unsigned long lightOnLimit = 60000;
 };
 
 #endif

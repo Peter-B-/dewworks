@@ -28,7 +28,7 @@ void Display::update()
         else
             showMeasurement("Aussen", this->currentMeas.Outside);
 
-        if (lightIsOn && now -lightOnTime > 3000)
+        if (lightIsOn && now -lightOnTime > lightOnLimit)
         {
             lcd.noBacklight();
             lightIsOn = false;
