@@ -29,8 +29,9 @@ Relais relais(RELAIS);
 
 Measurement measurement{};
 State state;
+Config config;
 
-Display display(state);
+Display display(state, config);
 ControlLogic control(state);
 
 Timer timerMeasure(500);
@@ -42,7 +43,6 @@ void setup()
     Serial.begin(115200);
     Serial.println("Starting");
 
-    Config config;
     EEPROM.get(0, config);
     if (isnanf(config.DeltaDewTempMin))
         config = control.getDefaultConfig();
