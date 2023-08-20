@@ -1,8 +1,9 @@
+
 #include <EEPROM.h>
 #include <avr/wdt.h>
 
-#include <Encoder.h>    // library Encoder
-#include <EasyButton.h> // library EasyButton
+#include <EasyButton.h>   // library EasyButton
+#include <RotaryEncoder.h>
 
 #include "Types.h"
 #include "Hardware.h"
@@ -20,7 +21,7 @@ const int RELAIS = 8;
 const int SENSOR_IN = 6;
 const int SENSOR_OUT = 7;
 
-Encoder encoder(DT, CLK);
+RotaryEncoder encoder(DT, CLK, RotaryEncoder::LatchMode::FOUR3);
 EasyButton button(SW);
 
 DhtSensor dhtIn(SENSOR_IN);
@@ -117,36 +118,25 @@ void print(Config &config)
     Serial.println();
 }
 
-
-int32_t lastPos =0;
 void loop()
 {
     auto now = millis();
     wdt_reset(); // Watchdog zurücksetzen
 
     button.read();
-    int32_t enc = encoder.read();
-    int32_t newPosition = enc >> 2;
+    encoder.tick();
+    int newPosition = -encoder.getPosition();
 
     if (timerMeasure.ShouldRun(now))
     {
         measurement.Inside = dhtIn.measure();
         measurement.Outside = dhtOut.measure();
 
-         control.setMeasurement(measurement);
-         //bool output = control.update();
-        relais.set(now % 2 == 0);
-     }
-
-    Serial.print(now);
-    Serial.print("   ");
-    Serial.print(enc);
-    Serial.print("   ");
-    Serial.println(newPosition);
-    if (newPosition != lastPos)
-    {
-        Serial.println(newPosition);
-        lastPos = newPosition;
+        control.setMeasurement(measurement);
+        bool output = false;
+        output = control.update();
+        relais.set(output);
     }
-    //display.update(newPosition);
+    
+    display.update(newPosition);
 }
