@@ -1,5 +1,13 @@
 #include "Display.h"
 
+unsigned getPage( int value, unsigned pages) {
+    int mod = value % (int)pages;
+    if (mod < 0) {
+        mod += pages;
+    }
+    return mod;
+}
+
 Display::Display(State &state, Config &config)
     : timer(1000),
       state(state),
@@ -90,7 +98,8 @@ void Display::update(long rotaryPos)
 
     if (rotationInput && mode == DisplayMode::Menu)
     {
-        currentMenuItem = &menuItems[rotaryPos % menuItemCount];
+        auto page = getPage(rotaryPos, menuItemCount);
+        currentMenuItem = &menuItems[page];
         currentMenuItem->select(rotaryPos);
     }
 
@@ -183,7 +192,7 @@ void Display::showMeasurement(char *id, EnvironmentInfo ei)
 
 void Display::showMeasurementPage(long rotaryPos)
 {
-    int page = rotaryPos % 3;
+    auto page = getPage(rotaryPos, 3);
 
     if (page == 0)
         showMeasurement("Innen", this->state.Input.Inside);
@@ -212,7 +221,6 @@ void Display::showState()
 
 void Display::showMenu(long rotaryPos)
 {
-
     clearBuffer();
     currentMenuItem->printHeader(lcdBuffer);
     lcd.setCursor(0, 0);
