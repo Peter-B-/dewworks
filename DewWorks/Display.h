@@ -52,8 +52,8 @@ private:
 
     hd44780_I2Cexp lcd;
     Timer timer;
-    char lcdBuffer[40];
-    char numberBuffer[10];
+    char lcdBuffer[20];
+    char numberBuffer[20];
 
     void showMeasurementPage(long rotaryPos);
     void showMeasurement(char *id, EnvironmentInfo envInfo);

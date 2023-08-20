@@ -20,10 +20,49 @@ void Display::begin()
     if (status)
         hd44780::fatalError(status);
 
-    byte deg[8] = {B00111, B00101, B00111, B0000, B00000, B00000, B00000, B00000}; // character °
+    byte deg[8] = {
+        B00111,
+        B00101,
+        B00111,
+        B0000,
+        B00000,
+        B00000,
+        B00000,
+        B00000}; // character °
     lcd.createChar(0, deg);
-    byte tau[8] = {B00000, B00000, B00000, B11111, B00100, B00100, B00100, B00110}; // character tau
+
+    byte tau[8] = {
+        B00000,
+        B00000,
+        B00000,
+        B11111,
+        B00100,
+        B00100,
+        B00100,
+        B00110}; // character tau
     lcd.createChar(1, tau);
+
+    byte left[8] = {
+        B00001,
+        B00011,
+        B00111,
+        B01111,
+        B01111,
+        B00111,
+        B00011,
+        B00001}; // left arrow
+    lcd.createChar(2, left);
+
+    byte right[8] = {
+        B10000,
+        B11000,
+        B11100,
+        B11110,
+        B11110,
+        B11100,
+        B11000,
+        B10000}; // right arrow
+    lcd.createChar(3, right);
 }
 
 void Display::update(long rotaryPos)
@@ -101,7 +140,7 @@ void Display::lightOn()
 
 void printNumber(char *dest, float no, int8_t digitsBeforeDot, int8_t digitsAfterDot)
 {
-    char buffer[20];
+    char buffer[40];
 
     int8_t size;
     if (digitsAfterDot == 0)
@@ -181,6 +220,14 @@ void Display::showMenu(long rotaryPos)
 
     clearBuffer();
     currentMenuItem->printValue(lcdBuffer);
+
+    if (mode == DisplayMode::ValueChange)
+        {
+            // Show arrows
+            lcdBuffer[0] = 3;
+            lcdBuffer[15] = 2;
+        }
+
     lcd.setCursor(0, 1);
     lcd.write(lcdBuffer, 16);
 }

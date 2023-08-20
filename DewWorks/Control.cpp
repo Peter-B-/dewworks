@@ -14,7 +14,6 @@ void ControlLogic::begin(Config config)
 
 bool ControlLogic::update()
 {
-
     bool output = state.Output.State;
 
     ControlInput &inp = state.Input;
@@ -22,7 +21,7 @@ bool ControlLogic::update()
     if (isnanf(deltaDewTemp))
     {
         output = false;
-        strcpy(state.Output.Reason, "keine Daten");
+        //strcpy(state.Output.Reason, "keine Daten");
     }
     if (
         deltaDewTemp > (config.DeltaDewTempMin + config.DeltaDewTempHyst) &&
@@ -31,7 +30,7 @@ bool ControlLogic::update()
         inp.Inside.Humidity > (config.HumInMin + config.HumInHyst))
     {
         output = true;
-        strcpy(state.Output.Reason, "An");
+        //strcpy(state.Output.Reason, "An");
     }
     else if (!output)
     {
@@ -40,22 +39,22 @@ bool ControlLogic::update()
     else if (deltaDewTemp < config.DeltaDewTempMin)
     {
         output = false;
-        strcpy(state.Output.Reason, "Taupunkt");
+        //strcpy(state.Output.Reason, "Taupunkt");
     }
     else if (inp.Inside.Temperature < config.TempInMin)
     {
         output = false;
-        strcpy(state.Output.Reason, "Innentemp");
+        //strcpy(state.Output.Reason, "Innentemp");
     }
     else if (inp.Outside.Temperature < config.TempOutMin)
     {
         output = false;
-        strcpy(state.Output.Reason, "Aussentemp");
+        //strcpy(state.Output.Reason, "Aussentemp");
     }
     else if (inp.Inside.Humidity < config.HumInMin)
     {
         output = false;
-        strcpy(state.Output.Reason, "Luftfeuchte");
+        //strcpy(state.Output.Reason, "Luftfeuchte");
     }
 
     state.Output.State = output;

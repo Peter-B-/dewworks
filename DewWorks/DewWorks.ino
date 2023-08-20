@@ -118,23 +118,35 @@ void print(Config &config)
 }
 
 
+int32_t lastPos =0;
 void loop()
 {
     auto now = millis();
     wdt_reset(); // Watchdog zurücksetzen
 
     button.read();
-    long newPosition = -encoder.read() >> 2;
+    int32_t enc = encoder.read();
+    int32_t newPosition = enc >> 2;
 
     if (timerMeasure.ShouldRun(now))
     {
         measurement.Inside = dhtIn.measure();
         measurement.Outside = dhtOut.measure();
 
-        control.setMeasurement(measurement);
-        bool output = control.update();
-        relais.set(output);
-    }
+         control.setMeasurement(measurement);
+         //bool output = control.update();
+        relais.set(now % 2 == 0);
+     }
 
-    display.update(newPosition);
+    Serial.print(now);
+    Serial.print("   ");
+    Serial.print(enc);
+    Serial.print("   ");
+    Serial.println(newPosition);
+    if (newPosition != lastPos)
+    {
+        Serial.println(newPosition);
+        lastPos = newPosition;
+    }
+    //display.update(newPosition);
 }
