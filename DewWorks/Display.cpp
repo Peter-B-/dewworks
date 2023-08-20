@@ -1,16 +1,18 @@
 #include "Display.h"
 
 Display::Display(State &state, Config &config)
-    : timer(300),
+    : timer(1000),
       state(state),
       menuItems({
           MenuItem("d Temp Innen", config.TempInOffset, -5.0, 5.0, 0.1),
           MenuItem("d Temp Aussen", config.TempOutOffset, -5.0, 5.0, 0.1),
-          MenuItem("d Feuchte Innen", config.HumInOffset, -10, 10.0, 1),
-          MenuItem("d Feuchte Aussen", config.HumOutOffset, -10.0, 10.0, 1),
-      }){
-        currentMenuItem = &menuItems[0];
-      };
+          MenuItem("d Feuchte Inn.", config.HumInOffset, -10, 10.0, 1),
+          MenuItem("d Feuchte Aus.", config.HumOutOffset, -10.0, 10.0, 1),
+      })
+{
+    currentMenuItem = &menuItems[0];
+    currentMenuItem->select(lastRotaryPos);
+};
 
 void Display::begin()
 {
@@ -47,13 +49,20 @@ void Display::update(long rotaryPos)
         Serial.println(rotaryPos);
     }
 
-    if (shouldRefresh)
+    if (rotationInput && mode == DisplayMode::Menu)
+    {
+        currentMenuItem = &menuItems[rotaryPos % menuItemCount];
+        currentMenuItem->select(rotaryPos);
+    }
+
+    if (shouldRefresh || rotationInput)
     {
         switch (mode)
         {
         case DisplayMode::Menu:
         case DisplayMode::ValueChange:
             showMenu(rotaryPos);
+            break;
 
         case DisplayMode::Measurement:
         default:
@@ -149,9 +158,9 @@ void Display::showState()
 {
     clearBuffer();
     if (state.Output.State)
-        strcpy(lcdBuffer, "An");
+        strncpy(lcdBuffer, "An", 2);
     else
-        strcpy(lcdBuffer, "Aus");
+        strncpy(lcdBuffer, "Aus", 3);
 
     lcd.setCursor(0, 0);
     lcd.write(lcdBuffer, 16);
@@ -170,6 +179,10 @@ void Display::showMenu(long rotaryPos)
     lcd.setCursor(0, 0);
     lcd.write(lcdBuffer, 16);
 
+    clearBuffer();
+    currentMenuItem->printValue(lcdBuffer);
+    lcd.setCursor(0, 1);
+    lcd.write(lcdBuffer, 16);
 }
 
 void Display::clearBuffer()
@@ -178,7 +191,7 @@ void Display::clearBuffer()
         lcdBuffer[i] = ' ';
 }
 
-MenuItem::MenuItem(String name, float &value, float min, float max, float factor) : value(value)
+MenuItem::MenuItem(const char *name, float &value, float min, float max, float factor) : value(value)
 {
     this->name = name;
     this->min = min;
@@ -206,7 +219,7 @@ void MenuItem::update(long rotrayPos)
 
 void MenuItem::printHeader(char *buffer)
 {
-    strncpy(buffer, name.c_str(), name.length());
+    strncpy(buffer, name, strlen(name));
 }
 
 void MenuItem::printValue(char *buffer)

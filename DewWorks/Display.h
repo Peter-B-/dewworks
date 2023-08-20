@@ -21,17 +21,17 @@ namespace DisplayMode
 class MenuItem
 {
 public:
-    MenuItem(String name, float &value, float min, float max, float factor);
-    
+    MenuItem(const char *name, float &value, float min, float max, float factor);
+
     void select(long rotaryPos);
 
     void update(long rotrayPos);
-    void printHeader(char* buffer);
-    void printValue(char* buffer);
+    void printHeader(char *buffer);
+    void printValue(char *buffer);
 
 private:
-    String name;
-    float& value;
+    const char *name;
+    float &value;
     float initialValue;
     float min, max, factor;
     long initialRotaryPos;
@@ -68,10 +68,11 @@ private:
     unsigned long lightOnTime;
     unsigned long lightOnLimit = 15000;
 
-    long lastRotaryPos = -1;
+    long lastRotaryPos = 0;
     DisplayMode::Mode mode = DisplayMode::Measurement;
 
     MenuItem* currentMenuItem;
+    const size_t menuItemCount = 4;
     MenuItem menuItems[4];
 };
 
