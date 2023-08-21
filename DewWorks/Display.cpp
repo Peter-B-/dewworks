@@ -1,8 +1,10 @@
 #include "Display.h"
 
-unsigned getPage( int value, unsigned pages) {
+unsigned getPage(int value, unsigned pages)
+{
     int mod = value % (int)pages;
-    if (mod < 0) {
+    if (mod < 0)
+    {
         mod += pages;
     }
     return mod;
@@ -12,10 +14,17 @@ Display::Display(State &state, Config &config)
     : timer(1000),
       state(state),
       menuItems({
-          MenuItem("d Temp Innen", config.TempInOffset, -5.0, 5.0, 0.1),
-          MenuItem("d Temp Aussen", config.TempOutOffset, -5.0, 5.0, 0.1),
-          MenuItem("d Feuchte Inn.", config.HumInOffset, -10, 10.0, 1),
-          MenuItem("d Feuchte Aus.", config.HumOutOffset, -10.0, 10.0, 1),
+          MenuItem("K Temp innen", config.TempInOffset, -5.0, 5.0, 0.1),
+          MenuItem("K Temp aussen", config.TempOutOffset, -5.0, 5.0, 0.1),
+          MenuItem("K Feuchte innen", config.HumInOffset, -10, 10.0, 1),
+          MenuItem("K Feuchte aussen", config.HumOutOffset, -10.0, 10.0, 1),
+          MenuItem("\4\1. Min", config.DeltaDewTempMin, 0.0, 10.0, 0.2),
+          MenuItem("\4\1. Hysterese", config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
+          MenuItem("Feuchte in min", config.HumInMin, 10.0, 80.0, 1),
+          MenuItem("Feuchte Hyst", config.HumInHyst, 0.0, 10.0, 0.2),
+          MenuItem("Temp innen min", config.TempInMin, -20.0, 25.0, 1),
+          MenuItem("Temp aussen min", config.TempOutMin, -20.0, 25.0, 1),
+          MenuItem("Temp Hysterese", config.TempHyst, 0.0, 5.0, 0.2),
       })
 {
     currentMenuItem = &menuItems[0];
@@ -71,6 +80,17 @@ void Display::begin()
         B11000,
         B10000}; // right arrow
     lcd.createChar(3, right);
+
+    byte delta[8] = {
+        B00000,
+        B00100,
+        B01010,
+        B01010,
+        B10001,
+        B10001,
+        B11111,
+        B00000}; // Delta
+    lcd.createChar(4, delta);
 }
 
 void Display::update(long rotaryPos)
@@ -230,11 +250,11 @@ void Display::showMenu(long rotaryPos)
     currentMenuItem->printValue(lcdBuffer);
 
     if (mode == DisplayMode::ValueChange)
-        {
-            // Show arrows
-            lcdBuffer[0] = 3;
-            lcdBuffer[15] = 2;
-        }
+    {
+        // Show arrows
+        lcdBuffer[0] = 3;
+        lcdBuffer[15] = 2;
+    }
 
     lcd.setCursor(0, 1);
     lcd.write(lcdBuffer, 16);

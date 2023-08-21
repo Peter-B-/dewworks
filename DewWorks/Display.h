@@ -72,8 +72,8 @@ private:
     DisplayMode::Mode mode = DisplayMode::Measurement;
 
     MenuItem* currentMenuItem;
-    const size_t menuItemCount = 4;
-    MenuItem menuItems[4];
+    const size_t menuItemCount = 11;
+    MenuItem menuItems[11];
 };
 
 #endif
