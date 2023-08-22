@@ -136,16 +136,14 @@ void loop()
 
     button.read();
     encoder.tick();
-    //int newPosition = -encoder.getPosition();
 
-
+    int newPosition = -encoder.getPosition();
+    display.update(newPosition);
 
     if (timerMeasure.shouldRun(now))
     {
-        Serial.print(F("Free: "));
-        Serial.print(freeMemory());
-        Serial.print(F(", Pos: "));
-        Serial.println(encoder.getPosition());
+        Serial.print(F("free: "));
+        Serial.println(freeMemory());
 
         measurement.Inside = dhtIn.measure();
         measurement.Outside = dhtOut.measure();
@@ -155,12 +153,5 @@ void loop()
         output = control.update();
         relais.set(output);
 
-        Serial.print(F("Free: "));
-        Serial.print(freeMemory());
-        Serial.print(F(", Pos: "));
-        Serial.println(encoder.getPosition());
     }
-    int newPosition = -encoder.getPosition();
-
-    display.update(newPosition);
 }

@@ -56,7 +56,7 @@ private:
     Config& config;
 
     void showMeasurementPage(long rotaryPos);
-    void showMeasurement(const char *id, EnvironmentInfo envInfo);
+    void showMeasurement(const __FlashStringHelper* id, const EnvironmentInfo envInfo);
     void showState();
 
     void showMenu(long rotaryPos);

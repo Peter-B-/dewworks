@@ -157,8 +157,6 @@ void Display::update(const long rotaryPos)
 
 void Display::buttonPressed()
 {
-    Serial.println("pressed");
-
     if (mode == DisplayMode::Menu)
         mode = DisplayMode::ValueChange;
     else if (mode == DisplayMode::ValueChange)
@@ -167,8 +165,6 @@ void Display::buttonPressed()
 
 void Display::buttonPressedLong()
 {
-    Serial.println("long pressed");
-
     if (mode == DisplayMode::Measurement)
         mode = DisplayMode::Menu;
     else if (mode == DisplayMode::Menu)
@@ -196,11 +192,11 @@ void printNumber(char* dest, const float no, const int8_t digitsBeforeDot, const
     strncpy(dest, buffer, size);
 }
 
-void Display::showMeasurement(const char* id, const EnvironmentInfo envInfo)
+void Display::showMeasurement(const __FlashStringHelper* id, const EnvironmentInfo envInfo)
 {
     clearBuffer();
 
-    strncpy(lcdBuffer, id, strlen(id));
+    strcpy_P(lcdBuffer, (const char*)id);
     printNumber(lcdBuffer + 9, envInfo.DewPointTemperature, 3, 1);
     lcdBuffer[8] = 1;
     lcdBuffer[14] = 0;
@@ -230,9 +226,9 @@ void Display::showMeasurementPage(const long rotaryPos)
     const auto page = getPage(rotaryPos, 3);
 
     if (page == 0)
-        showMeasurement("Innen", this->state.Input.Inside);
+        showMeasurement(F("Innen"), this->state.Input.Inside);
     else if (page == 1)
-        showMeasurement("Aussen", this->state.Input.Outside);
+        showMeasurement(F("Aussen"), this->state.Input.Outside);
     else
         showState();
 }
@@ -241,16 +237,15 @@ void Display::showState()
 {
     clearBuffer();
     if (state.Output.State)
-        strncpy(lcdBuffer, "An", 2);
+        strcpy_P(lcdBuffer, (const char*)F("An"));
     else
-        strncpy(lcdBuffer, "Aus", 3);
+        strcpy_P(lcdBuffer, (const char*)F("Aus"));
 
     lcd.setCursor(0, 0);
     lcd.write(lcdBuffer, 16);
 
     clearBuffer();
-    Serial.println(state.Output.Reason);
-    strncpy(lcdBuffer, state.Output.Reason, strlen(state.Output.Reason));
+    strcpy(lcdBuffer, state.Output.Reason);
     lcd.setCursor(0, 1);
     lcd.write(lcdBuffer, 16);
 }
