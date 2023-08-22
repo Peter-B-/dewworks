@@ -10,24 +10,24 @@ unsigned getPage(const int value, const unsigned pages)
     return mod;
 }
 
-Display::Display(State &state, Config &config)
+Display::Display(State& state, Config& config)
     : state(state),
-      timer(1000),
-      config(config),
-      menuItems({
-          
-          MenuItem("K Temp innen", config.TempInOffset, -5.0, 5.0, 0.1),
-          MenuItem("K Temp aussen", config.TempOutOffset, -5.0, 5.0, 0.1),
-          MenuItem("K Feuchte innen", config.HumInOffset, -10, 10.0, 1),
-          MenuItem("K Feuchte aussen", config.HumOutOffset, -10.0, 10.0, 1),
-          MenuItem("\4\1. Min", config.DeltaDewTempMin, 0.0, 10.0, 0.2),
-          MenuItem("\4\1. Hysterese", config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
-          MenuItem("Feuchte in min", config.HumInMin, 10.0, 80.0, 1),
-          MenuItem("Feuchte Hyst", config.HumInHyst, 0.0, 10.0, 0.2),
-          MenuItem("Temp innen min", config.TempInMin, -20.0, 25.0, 1),
-          MenuItem("Temp aussen min", config.TempOutMin, -20.0, 25.0, 1),
-          MenuItem("Temp Hysterese", config.TempHyst, 0.0, 5.0, 0.2),
-      }) 
+    timer(1000),
+    config(config),
+    menuItems({
+
+        MenuItem(F("K Temp innen"), config.TempInOffset, -5.0, 5.0, 0.1),
+        MenuItem(F("K Temp aussen"), config.TempOutOffset, -5.0, 5.0, 0.1),
+        MenuItem(F("K Feuchte innen"), config.HumInOffset, -10, 10.0, 1),
+        MenuItem(F("K Feuchte aussen"), config.HumOutOffset, -10.0, 10.0, 1),
+        MenuItem(F("\4\1. Min"), config.DeltaDewTempMin, 0.0, 10.0, 0.2),
+        MenuItem(F("\4\1. Hysterese"), config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
+        MenuItem(F("Feuchte in min"), config.HumInMin, 10.0, 80.0, 1),
+        MenuItem(F("Feuchte Hyst"), config.HumInHyst, 0.0, 10.0, 0.2),
+        MenuItem(F("Temp innen min"), config.TempInMin, -20.0, 25.0, 1),
+        MenuItem(F("Temp aussen min"), config.TempOutMin, -20.0, 25.0, 1),
+        MenuItem(F("Temp Hysterese"), config.TempHyst, 0.0, 5.0, 0.2),
+        })
 {
     currentMenuItem = &menuItems[0];
     currentMenuItem->select(lastRotaryPos);
@@ -47,18 +47,18 @@ void Display::begin()
         B00000,
         B00000,
         B00000,
-        B00000}; // character °
+        B00000 }; // character °
     lcd.createChar(0, deg);
 
     byte tau[8] = {
-        B00000,
         B00000,
         B00000,
         B11111,
         B00100,
         B00100,
         B00100,
-        B00110}; // character tau
+        B00110,
+        B00000 }; // character tau
     lcd.createChar(1, tau);
 
     byte left[8] = {
@@ -69,7 +69,7 @@ void Display::begin()
         B01111,
         B00111,
         B00011,
-        B00001}; // left arrow
+        B00001 }; // left arrow
     lcd.createChar(2, left);
 
     byte right[8] = {
@@ -80,7 +80,7 @@ void Display::begin()
         B11110,
         B11100,
         B11000,
-        B10000}; // right arrow
+        B10000 }; // right arrow
     lcd.createChar(3, right);
 
     byte delta[8] = {
@@ -91,7 +91,7 @@ void Display::begin()
         B10001,
         B10001,
         B11111,
-        B00000}; // Delta
+        B00000 }; // Delta
     lcd.createChar(4, delta);
 }
 
@@ -169,7 +169,7 @@ void Display::lightOn()
     lightOnTime = millis();
 }
 
-void printNumber(char *dest, const float no, const int8_t digitsBeforeDot, const int8_t digitsAfterDot)
+void printNumber(char* dest, const float no, const int8_t digitsBeforeDot, const int8_t digitsAfterDot)
 {
     char buffer[40];
 
@@ -183,7 +183,7 @@ void printNumber(char *dest, const float no, const int8_t digitsBeforeDot, const
     strncpy(dest, buffer, size);
 }
 
-void Display::showMeasurement(const char *id, const EnvironmentInfo envInfo)
+void Display::showMeasurement(const char* id, const EnvironmentInfo envInfo)
 {
     clearBuffer();
 
@@ -236,7 +236,8 @@ void Display::showState()
     lcd.write(lcdBuffer, 16);
 
     clearBuffer();
-    strncpy(lcdBuffer, state.Output.Reason.c_str(), state.Output.Reason.length());
+    Serial.println(state.Output.Reason);
+    strncpy(lcdBuffer, state.Output.Reason, strlen(state.Output.Reason));
     lcd.setCursor(0, 1);
     lcd.write(lcdBuffer, 16);
 }
@@ -268,12 +269,14 @@ void Display::clearBuffer()
         lcdBuffer[i] = ' ';
 }
 
-MenuItem::MenuItem(const String& name, float &value, const float min, const float max, const float factor) : value(value), initialValue(0), initialRotaryPos(0)
+MenuItem::MenuItem(const __FlashStringHelper* name, float& value, const float minimum, const float maximum, const float factor)
+    :name(name),
+    value(value),
+    initialValue(0),
+    minimum(minimum),
+    maximum(maximum),
+    factor(factor), initialRotaryPos(0)
 {
-    this->name = name;
-    this->min = min;
-    this->max = max;
-    this->factor = factor;
 }
 
 void MenuItem::select(const long rotaryPos)
@@ -286,20 +289,23 @@ void MenuItem::update(const long rotrayPos) const
 {
     float v = static_cast<float>(rotrayPos - initialRotaryPos) * factor + initialValue;
 
-    if (v > max)
-        v = max;
-    if (v < min)
-        v = min;
+    if (v > maximum)
+        v = maximum;
+    if (v < minimum)
+        v = minimum;
 
     value = v;
 }
 
-void MenuItem::printHeader(char *buffer) const
+void MenuItem::printHeader(char* buffer) const
 {
+    Serial.print(name.c_str());
+    Serial.print(" ");
+    Serial.println(name.length());
     strncpy(buffer, name.c_str(), name.length());
 }
 
-void MenuItem::printValue(char *buffer) const
+void MenuItem::printValue(char* buffer) const
 {
     printNumber(buffer, value, 5, 1);
 }

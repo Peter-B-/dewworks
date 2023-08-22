@@ -29,7 +29,7 @@ struct ControlInput
 struct ControlOutput
 {
     bool State{};
-    String Reason{};
+    char Reason[20]{};
 };
 
 struct State

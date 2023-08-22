@@ -6,10 +6,20 @@ ControlLogic::ControlLogic(State &state) : state(state)
 {
 }
 
+constexpr char reason_off[] PROGMEM = "Noch aus";
+constexpr char reason_on[] PROGMEM = "Alles Top!";
+constexpr char reason_no_data[] PROGMEM = "Keine Daten";
+constexpr char reason_dew[] PROGMEM = "Taupunkt";
+constexpr char reason_temp_in[] PROGMEM = "Innentemp";
+constexpr char reason_temp_out[] PROGMEM = "Aussentemp";
+constexpr char reason_humidity[] PROGMEM = "Luftfeuchte";
+
 void ControlLogic::begin(const Config& configuration)
 {
     this->config = configuration;
-    state.Output.Reason = "Noch aus";
+    strcpy_P(state.Output.Reason, reason_off);
+    Serial.print("Reason: ");
+    Serial.println(state.Output.Reason);
 }
 
 bool ControlLogic::update() const
@@ -21,7 +31,7 @@ bool ControlLogic::update() const
     if (isnanf(deltaDewTemp))
     {
         output = false;
-        state.Output.Reason = "keine Daten";
+        strcpy_P(state.Output.Reason, reason_no_data);
     }
     if (
         deltaDewTemp > (config.DeltaDewTempMin + config.DeltaDewTempHyst) &&
@@ -30,7 +40,7 @@ bool ControlLogic::update() const
         inp.Inside.Humidity > (config.HumInMin + config.HumInHyst))
     {
         output = true;
-        state.Output.Reason = "An";
+        strcpy_P(state.Output.Reason, reason_on);
     }
     else if (!output)
     {
@@ -39,22 +49,22 @@ bool ControlLogic::update() const
     else if (deltaDewTemp < config.DeltaDewTempMin)
     {
         output = false;
-        state.Output.Reason = "Taupunkt";
+        strcpy_P(state.Output.Reason, reason_dew);
     }
     else if (inp.Inside.Temperature < config.TempInMin)
     {
         output = false;
-        state.Output.Reason = "Innentemp";
+        strcpy_P(state.Output.Reason, reason_temp_in);
     }
     else if (inp.Outside.Temperature < config.TempOutMin)
     {
         output = false;
-        state.Output.Reason = "Aussentemp";
+        strcpy_P(state.Output.Reason, reason_temp_out);
     }
     else if (inp.Inside.Humidity < config.HumInMin)
     {
         output = false;
-        state.Output.Reason = "Luftfeuchte";
+        strcpy_P(state.Output.Reason, reason_humidity);
     }
 
     state.Output.State = output;
