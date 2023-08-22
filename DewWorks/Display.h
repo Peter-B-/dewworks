@@ -21,7 +21,7 @@ namespace DisplayMode
 class MenuItem
 {
 public:
-    MenuItem(const __FlashStringHelper* name, float &value, float min, float max, float factor);
+    MenuItem(const char* name, float &value, float min, float max, float factor);
 
     void select(long rotaryPos);
 
@@ -30,7 +30,7 @@ public:
     void printValue(char *buffer) const;
 
 private:
-    String name;
+    const char* name;
     float &value;
     float initialValue;
     float minimum, maximum, factor;

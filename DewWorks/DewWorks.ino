@@ -44,44 +44,44 @@ void formatNumber(const float input, const byte columns, const byte places)
     Serial.print(buffer);
 }
 
-void print(const Config &configuration)
+void print(const Config& configuration)
 {
     Serial.println();
-    Serial.println("Configuration");
-    Serial.print("DeltaDewTempMin  ");
+    Serial.println(F("Configuration"));
+    Serial.print(F("DeltaDewTempMin  "));
     formatNumber(configuration.DeltaDewTempMin, 8, 1);
-    Serial.println(" °C");
-    Serial.print("DeltaDewTempHyst ");
+    Serial.println(F(" °C"));
+    Serial.print(F("DeltaDewTempHyst "));
     formatNumber(configuration.DeltaDewTempHyst, 8, 1);
-    Serial.println(" °C");
-    Serial.print("HumInMin         ");
+    Serial.println(F(" °C"));
+    Serial.print(F("HumInMin         "));
     formatNumber(configuration.HumInMin, 8, 0);
-    Serial.println(" %");
-    Serial.print("HumInHyst        ");
+    Serial.println(F(" %"));
+    Serial.print(F("HumInHyst        "));
     formatNumber(configuration.HumInHyst, 8, 0);
-    Serial.println(" %p");
-    Serial.print("TempInMin        ");
+    Serial.println(F(" %p"));
+    Serial.print(F("TempInMin        "));
     formatNumber(configuration.TempInMin, 8, 1);
-    Serial.println(" °C");
-    Serial.print("TempOutMin       ");
+    Serial.println(F(" °C"));
+    Serial.print(F("TempOutMin       "));
     formatNumber(configuration.TempOutMin, 8, 1);
-    Serial.println(" °C");
-    Serial.print("TempHyst         ");
+    Serial.println(F(" °C"));
+    Serial.print(F("TempHyst         "));
     formatNumber(configuration.TempHyst, 8, 1);
-    Serial.println(" °C");
+    Serial.println(F(" °C"));
     Serial.println();
-    Serial.print("TempInOffset     ");
+    Serial.print(F("TempInOffset     "));
     formatNumber(configuration.TempInOffset, 8, 1);
-    Serial.println(" °C");
-    Serial.print("TempOutOffset    ");
+    Serial.println(F(" °C"));
+    Serial.print(F("TempOutOffset    "));
     formatNumber(configuration.TempOutOffset, 8, 1);
-    Serial.println(" °C");
-    Serial.print("HumInOffset      ");
+    Serial.println(F(" °C"));
+    Serial.print(F("HumInOffset      "));
     formatNumber(configuration.HumInOffset, 8, 1);
-    Serial.println(" °C");
-    Serial.print("HumOutOffset     ");
+    Serial.println(F(" °C"));
+    Serial.print(F("HumOutOffset     "));
     formatNumber(configuration.HumOutOffset, 8, 1);
-    Serial.println(" °C");
+    Serial.println(F(" °C"));
     Serial.println();
 }
 
@@ -95,16 +95,23 @@ void onPressed()
     display.buttonPressed();
 }
 
+int freeMemory() {
+    extern int __heap_start, * __brkval;
+    int v;
+    return (int)&v - (__brkval == 0 ? (int)&__heap_start : (int)__brkval);
+}
+
+
 void setup()
 {
     wdt_enable(WDTO_2S); // Set watchdog to 2 seconds
 
     Serial.begin(115200);
-    Serial.println("Starting");
 
     EEPROM.get(0, config);
     if (isnanf(config.DeltaDewTempMin))
         config = ControlLogic::getDefaultConfig();
+
     print(config);
 
     control.begin(config);
@@ -119,6 +126,9 @@ void setup()
     button.onPressed(onPressed);
 }
 
+
+
+
 void loop()
 {
     auto now = millis();
@@ -126,10 +136,17 @@ void loop()
 
     button.read();
     encoder.tick();
-    int newPosition = -encoder.getPosition();
+    //int newPosition = -encoder.getPosition();
+
+
 
     if (timerMeasure.shouldRun(now))
     {
+        Serial.print(F("Free: "));
+        Serial.print(freeMemory());
+        Serial.print(F(", Pos: "));
+        Serial.println(encoder.getPosition());
+
         measurement.Inside = dhtIn.measure();
         measurement.Outside = dhtOut.measure();
 
@@ -137,7 +154,13 @@ void loop()
         bool output = false;
         output = control.update();
         relais.set(output);
+
+        Serial.print(F("Free: "));
+        Serial.print(freeMemory());
+        Serial.print(F(", Pos: "));
+        Serial.println(encoder.getPosition());
     }
-    
+    int newPosition = -encoder.getPosition();
+
     display.update(newPosition);
 }

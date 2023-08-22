@@ -16,17 +16,17 @@ Display::Display(State& state, Config& config)
     config(config),
     menuItems({
 
-        MenuItem(F("K Temp innen"), config.TempInOffset, -5.0, 5.0, 0.1),
-        MenuItem(F("K Temp aussen"), config.TempOutOffset, -5.0, 5.0, 0.1),
-        MenuItem(F("K Feuchte innen"), config.HumInOffset, -10, 10.0, 1),
-        MenuItem(F("K Feuchte aussen"), config.HumOutOffset, -10.0, 10.0, 1),
-        MenuItem(F("\4\1. Min"), config.DeltaDewTempMin, 0.0, 10.0, 0.2),
-        MenuItem(F("\4\1. Hysterese"), config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
-        MenuItem(F("Feuchte in min"), config.HumInMin, 10.0, 80.0, 1),
-        MenuItem(F("Feuchte Hyst"), config.HumInHyst, 0.0, 10.0, 0.2),
-        MenuItem(F("Temp innen min"), config.TempInMin, -20.0, 25.0, 1),
-        MenuItem(F("Temp aussen min"), config.TempOutMin, -20.0, 25.0, 1),
-        MenuItem(F("Temp Hysterese"), config.TempHyst, 0.0, 5.0, 0.2),
+        MenuItem(PSTR("K Temp innen"), config.TempInOffset, -5.0, 5.0, 0.1),
+        MenuItem(PSTR("K Temp aussen"), config.TempOutOffset, -5.0, 5.0, 0.1),
+        MenuItem(PSTR("K Feuchte innen"), config.HumInOffset, -10, 10.0, 1),
+        MenuItem(PSTR("K Feuchte aussen"), config.HumOutOffset, -10.0, 10.0, 1),
+        MenuItem(PSTR("\5\2. Minimum"), config.DeltaDewTempMin, 0.0, 10.0, 0.2),
+        MenuItem(PSTR("\5\2. Hysterese"), config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
+        MenuItem(PSTR("Feuchte in min"), config.HumInMin, 10.0, 80.0, 1),
+        MenuItem(PSTR("Feuchte Hyst"), config.HumInHyst, 0.0, 10.0, 0.2),
+        MenuItem(PSTR("Temp innen min"), config.TempInMin, -20.0, 25.0, 1),
+        MenuItem(PSTR("Temp aussen min"), config.TempOutMin, -20.0, 25.0, 1),
+        MenuItem(PSTR("Temp Hysterese"), config.TempHyst, 0.0, 5.0, 0.2),
         })
 {
     currentMenuItem = &menuItems[0];
@@ -39,6 +39,19 @@ void Display::begin()
     if (status)
         hd44780::fatalError(status);
 
+
+    byte blank[8] = {
+        B00000,
+        B00000,
+        B00000,
+        B00000,
+        B00000,
+        B00000,
+        B00000,
+        B00000 }; // empty character: Hack so that \0 will be printed as space
+    lcd.createChar(0, blank);
+
+
     byte deg[8] = {
         B00111,
         B00101,
@@ -48,7 +61,7 @@ void Display::begin()
         B00000,
         B00000,
         B00000 }; // character °
-    lcd.createChar(0, deg);
+    lcd.createChar(1, deg);
 
     byte tau[8] = {
         B00000,
@@ -59,7 +72,7 @@ void Display::begin()
         B00100,
         B00110,
         B00000 }; // character tau
-    lcd.createChar(1, tau);
+    lcd.createChar(2, tau);
 
     byte left[8] = {
         B00001,
@@ -70,7 +83,7 @@ void Display::begin()
         B00111,
         B00011,
         B00001 }; // left arrow
-    lcd.createChar(2, left);
+    lcd.createChar(3, left);
 
     byte right[8] = {
         B10000,
@@ -81,7 +94,7 @@ void Display::begin()
         B11100,
         B11000,
         B10000 }; // right arrow
-    lcd.createChar(3, right);
+    lcd.createChar(4, right);
 
     byte delta[8] = {
         B00000,
@@ -92,7 +105,7 @@ void Display::begin()
         B10001,
         B11111,
         B00000 }; // Delta
-    lcd.createChar(4, delta);
+    lcd.createChar(5, delta);
 }
 
 void Display::update(const long rotaryPos)
@@ -269,7 +282,7 @@ void Display::clearBuffer()
         lcdBuffer[i] = ' ';
 }
 
-MenuItem::MenuItem(const __FlashStringHelper* name, float& value, const float minimum, const float maximum, const float factor)
+MenuItem::MenuItem(const char* name, float& value, const float minimum, const float maximum, const float factor)
     :name(name),
     value(value),
     initialValue(0),
@@ -299,10 +312,7 @@ void MenuItem::update(const long rotrayPos) const
 
 void MenuItem::printHeader(char* buffer) const
 {
-    Serial.print(name.c_str());
-    Serial.print(" ");
-    Serial.println(name.length());
-    strncpy(buffer, name.c_str(), name.length());
+    strcpy_P(buffer, name);
 }
 
 void MenuItem::printValue(char* buffer) const
