@@ -3,7 +3,7 @@
 #include <avr/wdt.h>
 
 #include <EasyButton.h>   // library EasyButton
-#include <RotaryEncoder.h>
+#include <Encoder.h>      // library Encoder
 
 #include "Types.h"
 #include "Hardware.h"
@@ -21,7 +21,7 @@ constexpr int RELAIS = 8;
 constexpr int SENSOR_IN = 6;
 constexpr int SENSOR_OUT = 7;
 
-RotaryEncoder encoder(DT, CLK, RotaryEncoder::LatchMode::FOUR3);
+Encoder encoder(DT, CLK);
 EasyButton button(SW);
 
 DhtSensor dhtIn(SENSOR_IN);
@@ -135,9 +135,9 @@ void loop()
     wdt_reset(); // Watchdog zurücksetzen
 
     button.read();
-    encoder.tick();
+    int32_t enc = encoder.read();
+    int32_t newPosition = enc >> 2;
 
-    int newPosition = -encoder.getPosition();
     display.update(newPosition);
 
     if (timerMeasure.shouldRun(now))
