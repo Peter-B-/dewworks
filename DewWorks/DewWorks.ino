@@ -11,15 +11,15 @@
 #include "Display.h"
 #include "Tools.h"
 
-const int LCD_COLS = 16;
-const int LCD_ROWS = 2;
+constexpr int LCD_COLS = 16;
+constexpr int LCD_ROWS = 2;
 
-const int CLK = 3;
-const int DT = 2;
-const int SW = 4;
-const int RELAIS = 8;
-const int SENSOR_IN = 6;
-const int SENSOR_OUT = 7;
+constexpr int CLK = 3;
+constexpr int DT = 2;
+constexpr int SW = 4;
+constexpr int RELAIS = 8;
+constexpr int SENSOR_IN = 6;
+constexpr int SENSOR_OUT = 7;
 
 RotaryEncoder encoder(DT, CLK, RotaryEncoder::LatchMode::FOUR3);
 EasyButton button(SW);
@@ -37,6 +37,64 @@ ControlLogic control(state);
 
 Timer timerMeasure(500);
 
+void formatNumber(const float input, const byte columns, const byte places)
+{
+    char buffer[20];
+    dtostrf(input, columns, places, buffer);
+    Serial.print(buffer);
+}
+
+void print(const Config &configuration)
+{
+    Serial.println();
+    Serial.println("Configuration");
+    Serial.print("DeltaDewTempMin  ");
+    formatNumber(configuration.DeltaDewTempMin, 8, 1);
+    Serial.println(" °C");
+    Serial.print("DeltaDewTempHyst ");
+    formatNumber(configuration.DeltaDewTempHyst, 8, 1);
+    Serial.println(" °C");
+    Serial.print("HumInMin         ");
+    formatNumber(configuration.HumInMin, 8, 0);
+    Serial.println(" %");
+    Serial.print("HumInHyst        ");
+    formatNumber(configuration.HumInHyst, 8, 0);
+    Serial.println(" %p");
+    Serial.print("TempInMin        ");
+    formatNumber(configuration.TempInMin, 8, 1);
+    Serial.println(" °C");
+    Serial.print("TempOutMin       ");
+    formatNumber(configuration.TempOutMin, 8, 1);
+    Serial.println(" °C");
+    Serial.print("TempHyst         ");
+    formatNumber(configuration.TempHyst, 8, 1);
+    Serial.println(" °C");
+    Serial.println();
+    Serial.print("TempInOffset     ");
+    formatNumber(configuration.TempInOffset, 8, 1);
+    Serial.println(" °C");
+    Serial.print("TempOutOffset    ");
+    formatNumber(configuration.TempOutOffset, 8, 1);
+    Serial.println(" °C");
+    Serial.print("HumInOffset      ");
+    formatNumber(configuration.HumInOffset, 8, 1);
+    Serial.println(" °C");
+    Serial.print("HumOutOffset     ");
+    formatNumber(configuration.HumOutOffset, 8, 1);
+    Serial.println(" °C");
+    Serial.println();
+}
+
+void onPressedLong()
+{
+    display.buttonPressedLong();
+}
+
+void onPressed()
+{
+    display.buttonPressed();
+}
+
 void setup()
 {
     wdt_enable(WDTO_2S); // Set watchdog to 2 seconds
@@ -46,7 +104,7 @@ void setup()
 
     EEPROM.get(0, config);
     if (isnanf(config.DeltaDewTempMin))
-        config = control.getDefaultConfig();
+        config = ControlLogic::getDefaultConfig();
     print(config);
 
     control.begin(config);
@@ -61,63 +119,6 @@ void setup()
     button.onPressed(onPressed);
 }
 
-void onPressedLong()
-{
-    display.buttonPressedLong();
-}
-void onPressed()
-{
-    display.buttonPressed();
-}
-
-void formatNumber(float input, byte columns, byte places)
-{
-    char buffer[20];
-    dtostrf(input, columns, places, buffer);
-    Serial.print(buffer);
-}
-
-void print(Config &config)
-{
-    Serial.println();
-    Serial.println("Configuration");
-    Serial.print("DeltaDewTempMin  ");
-    formatNumber(config.DeltaDewTempMin, 8, 1);
-    Serial.println(" °C");
-    Serial.print("DeltaDewTempHyst ");
-    formatNumber(config.DeltaDewTempHyst, 8, 1);
-    Serial.println(" °C");
-    Serial.print("HumInMin         ");
-    formatNumber(config.HumInMin, 8, 0);
-    Serial.println(" %");
-    Serial.print("HumInHyst        ");
-    formatNumber(config.HumInHyst, 8, 0);
-    Serial.println(" %p");
-    Serial.print("TempInMin        ");
-    formatNumber(config.TempInMin, 8, 1);
-    Serial.println(" °C");
-    Serial.print("TempOutMin       ");
-    formatNumber(config.TempOutMin, 8, 1);
-    Serial.println(" °C");
-    Serial.print("TempHyst         ");
-    formatNumber(config.TempHyst, 8, 1);
-    Serial.println(" °C");
-    Serial.println();
-    Serial.print("TempInOffset     ");
-    formatNumber(config.TempInOffset, 8, 1);
-    Serial.println(" °C");
-    Serial.print("TempOutOffset    ");
-    formatNumber(config.TempOutOffset, 8, 1);
-    Serial.println(" °C");
-    Serial.print("HumInOffset      ");
-    formatNumber(config.HumInOffset, 8, 1);
-    Serial.println(" °C");
-    Serial.print("HumOutOffset     ");
-    formatNumber(config.HumOutOffset, 8, 1);
-    Serial.println(" °C");
-    Serial.println();
-}
-
 void loop()
 {
     auto now = millis();
@@ -127,7 +128,7 @@ void loop()
     encoder.tick();
     int newPosition = -encoder.getPosition();
 
-    if (timerMeasure.ShouldRun(now))
+    if (timerMeasure.shouldRun(now))
     {
         measurement.Inside = dhtIn.measure();
         measurement.Outside = dhtOut.measure();

@@ -1,6 +1,8 @@
 #ifndef _TYPES_h
 #define _TYPES_h
 
+#include <Arduino.h>
+
 struct SensorMeasurement{
     float Temperature{};
     float Humidity{};
@@ -27,7 +29,7 @@ struct ControlInput
 struct ControlOutput
 {
     bool State{};
-    char Reason[20]{};
+    String Reason{};
 };
 
 struct State

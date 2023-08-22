@@ -1,6 +1,6 @@
 #include "Display.h"
 
-unsigned getPage(int value, unsigned pages)
+unsigned getPage(const int value, const unsigned pages)
 {
     int mod = value % (int)pages;
     if (mod < 0)
@@ -11,9 +11,11 @@ unsigned getPage(int value, unsigned pages)
 }
 
 Display::Display(State &state, Config &config)
-    : timer(1000),
-      state(state),
+    : state(state),
+      timer(1000),
+      config(config),
       menuItems({
+          
           MenuItem("K Temp innen", config.TempInOffset, -5.0, 5.0, 0.1),
           MenuItem("K Temp aussen", config.TempOutOffset, -5.0, 5.0, 0.1),
           MenuItem("K Feuchte innen", config.HumInOffset, -10, 10.0, 1),
@@ -25,7 +27,7 @@ Display::Display(State &state, Config &config)
           MenuItem("Temp innen min", config.TempInMin, -20.0, 25.0, 1),
           MenuItem("Temp aussen min", config.TempOutMin, -20.0, 25.0, 1),
           MenuItem("Temp Hysterese", config.TempHyst, 0.0, 5.0, 0.2),
-      })
+      }) 
 {
     currentMenuItem = &menuItems[0];
     currentMenuItem->select(lastRotaryPos);
@@ -33,7 +35,7 @@ Display::Display(State &state, Config &config)
 
 void Display::begin()
 {
-    auto status = lcd.begin(16, 2);
+    const auto status = lcd.begin(16, 2);
     if (status)
         hd44780::fatalError(status);
 
@@ -93,11 +95,11 @@ void Display::begin()
     lcd.createChar(4, delta);
 }
 
-void Display::update(long rotaryPos)
+void Display::update(const long rotaryPos)
 {
-    auto now = millis();
-    bool shouldRefresh = timer.ShouldRun(now);
-    bool rotationInput = rotaryPos != lastRotaryPos;
+    const auto now = millis();
+    const bool shouldRefresh = timer.shouldRun(now);
+    const bool rotationInput = rotaryPos != lastRotaryPos;
 
     if (shouldRefresh)
     {
@@ -167,7 +169,7 @@ void Display::lightOn()
     lightOnTime = millis();
 }
 
-void printNumber(char *dest, float no, int8_t digitsBeforeDot, int8_t digitsAfterDot)
+void printNumber(char *dest, const float no, const int8_t digitsBeforeDot, const int8_t digitsAfterDot)
 {
     char buffer[40];
 
@@ -181,12 +183,12 @@ void printNumber(char *dest, float no, int8_t digitsBeforeDot, int8_t digitsAfte
     strncpy(dest, buffer, size);
 }
 
-void Display::showMeasurement(char *id, EnvironmentInfo ei)
+void Display::showMeasurement(const char *id, const EnvironmentInfo envInfo)
 {
     clearBuffer();
 
     strncpy(lcdBuffer, id, strlen(id));
-    printNumber(lcdBuffer + 9, ei.DewPointTemperature, 3, 1);
+    printNumber(lcdBuffer + 9, envInfo.DewPointTemperature, 3, 1);
     lcdBuffer[8] = 1;
     lcdBuffer[14] = 0;
     lcdBuffer[15] = 'C';
@@ -198,11 +200,11 @@ void Display::showMeasurement(char *id, EnvironmentInfo ei)
 
     lcdBuffer[0] = 'r';
     lcdBuffer[1] = 'H';
-    printNumber(lcdBuffer + 2, ei.Humidity, 3, 0);
+    printNumber(lcdBuffer + 2, envInfo.Humidity, 3, 0);
     lcdBuffer[5] = '%';
 
     lcdBuffer[8] = 'T';
-    printNumber(lcdBuffer + 9, ei.Temperature, 3, 1);
+    printNumber(lcdBuffer + 9, envInfo.Temperature, 3, 1);
     lcdBuffer[14] = 0;
     lcdBuffer[15] = 'C';
 
@@ -210,9 +212,9 @@ void Display::showMeasurement(char *id, EnvironmentInfo ei)
     lcd.write(lcdBuffer, 16);
 }
 
-void Display::showMeasurementPage(long rotaryPos)
+void Display::showMeasurementPage(const long rotaryPos)
 {
-    auto page = getPage(rotaryPos, 3);
+    const auto page = getPage(rotaryPos, 3);
 
     if (page == 0)
         showMeasurement("Innen", this->state.Input.Inside);
@@ -234,7 +236,7 @@ void Display::showState()
     lcd.write(lcdBuffer, 16);
 
     clearBuffer();
-    strncpy(lcdBuffer, state.Output.Reason, strlen(state.Output.Reason));
+    strncpy(lcdBuffer, state.Output.Reason.c_str(), state.Output.Reason.length());
     lcd.setCursor(0, 1);
     lcd.write(lcdBuffer, 16);
 }
@@ -266,7 +268,7 @@ void Display::clearBuffer()
         lcdBuffer[i] = ' ';
 }
 
-MenuItem::MenuItem(const char *name, float &value, float min, float max, float factor) : value(value)
+MenuItem::MenuItem(const String& name, float &value, const float min, const float max, const float factor) : value(value), initialValue(0), initialRotaryPos(0)
 {
     this->name = name;
     this->min = min;
@@ -274,15 +276,15 @@ MenuItem::MenuItem(const char *name, float &value, float min, float max, float f
     this->factor = factor;
 }
 
-void MenuItem::select(long rotaryPos)
+void MenuItem::select(const long rotaryPos)
 {
-    this->initialRotaryPos = initialRotaryPos;
+    this->initialRotaryPos = rotaryPos;
     this->initialValue = value;
 }
 
-void MenuItem::update(long rotrayPos)
+void MenuItem::update(const long rotrayPos) const
 {
-    float v = (rotrayPos - initialRotaryPos) * factor + initialValue;
+    float v = static_cast<float>(rotrayPos - initialRotaryPos) * factor + initialValue;
 
     if (v > max)
         v = max;
@@ -292,12 +294,12 @@ void MenuItem::update(long rotrayPos)
     value = v;
 }
 
-void MenuItem::printHeader(char *buffer)
+void MenuItem::printHeader(char *buffer) const
 {
-    strncpy(buffer, name, strlen(name));
+    strncpy(buffer, name.c_str(), name.length());
 }
 
-void MenuItem::printValue(char *buffer)
+void MenuItem::printValue(char *buffer) const
 {
     printNumber(buffer, value, 5, 1);
 }

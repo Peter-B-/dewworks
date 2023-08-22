@@ -4,13 +4,12 @@
 #include "Types.h"
 
 #include <Adafruit_Sensor.h>
-#include <DHT.h>
 #include <DHT_U.h>
 
 class DhtSensor
 {
 public:
-    DhtSensor(uint8_t pin);
+    explicit DhtSensor(uint8_t pin);
     void begin();
     SensorMeasurement measure();
 private:
@@ -22,9 +21,9 @@ private:
 class Relais
 {
 public:
-    Relais(uint8_t pin);
-    void begin();
-    void set(bool on);
+    explicit Relais(uint8_t pin);
+    void begin() const;
+    void set(bool on) const;
 private:
     uint8_t pin;
 };

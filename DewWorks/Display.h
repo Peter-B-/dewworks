@@ -21,16 +21,16 @@ namespace DisplayMode
 class MenuItem
 {
 public:
-    MenuItem(const char *name, float &value, float min, float max, float factor);
+    MenuItem(const String& name, float &value, float min, float max, float factor);
 
     void select(long rotaryPos);
 
-    void update(long rotrayPos);
-    void printHeader(char *buffer);
-    void printValue(char *buffer);
+    void update(long rotrayPos) const;
+    void printHeader(char *buffer) const;
+    void printValue(char *buffer) const;
 
 private:
-    const char *name;
+    String name;
     float &value;
     float initialValue;
     float min, max, factor;
@@ -53,10 +53,10 @@ private:
     hd44780_I2Cexp lcd;
     Timer timer;
     char lcdBuffer[20];
-    char numberBuffer[20];
+    Config& config;
 
     void showMeasurementPage(long rotaryPos);
-    void showMeasurement(char *id, EnvironmentInfo envInfo);
+    void showMeasurement(const char *id, EnvironmentInfo envInfo);
     void showState();
 
     void showMenu(long rotaryPos);

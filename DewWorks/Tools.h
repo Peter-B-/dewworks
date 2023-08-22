@@ -4,8 +4,8 @@
 class Timer
 {
 public:
-    Timer(unsigned long intervall);
-    bool ShouldRun(unsigned long now);
+    explicit Timer(unsigned long intervallMs);
+    bool shouldRun(unsigned long now);
 private:
     unsigned long intervallMs;
     unsigned long lastRun = 0;

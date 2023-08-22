@@ -6,22 +6,22 @@ ControlLogic::ControlLogic(State &state) : state(state)
 {
 }
 
-void ControlLogic::begin(Config config)
+void ControlLogic::begin(const Config& configuration)
 {
-    setConfig(config);
-    strcpy(state.Output.Reason, "Noch aus");
+    this->config = configuration;
+    state.Output.Reason = "Noch aus";
 }
 
-bool ControlLogic::update()
+bool ControlLogic::update() const
 {
     bool output = state.Output.State;
 
-    ControlInput &inp = state.Input;
-    float deltaDewTemp = inp.Inside.DewPointTemperature - inp.Outside.DewPointTemperature;
+    const ControlInput &inp = state.Input;
+    const float deltaDewTemp = inp.Inside.DewPointTemperature - inp.Outside.DewPointTemperature;
     if (isnanf(deltaDewTemp))
     {
         output = false;
-        //strcpy(state.Output.Reason, "keine Daten");
+        state.Output.Reason = "keine Daten";
     }
     if (
         deltaDewTemp > (config.DeltaDewTempMin + config.DeltaDewTempHyst) &&
@@ -30,7 +30,7 @@ bool ControlLogic::update()
         inp.Inside.Humidity > (config.HumInMin + config.HumInHyst))
     {
         output = true;
-        //strcpy(state.Output.Reason, "An");
+        state.Output.Reason = "An";
     }
     else if (!output)
     {
@@ -39,40 +39,36 @@ bool ControlLogic::update()
     else if (deltaDewTemp < config.DeltaDewTempMin)
     {
         output = false;
-        //strcpy(state.Output.Reason, "Taupunkt");
+        state.Output.Reason = "Taupunkt";
     }
     else if (inp.Inside.Temperature < config.TempInMin)
     {
         output = false;
-        //strcpy(state.Output.Reason, "Innentemp");
+        state.Output.Reason = "Innentemp";
     }
     else if (inp.Outside.Temperature < config.TempOutMin)
     {
         output = false;
-        //strcpy(state.Output.Reason, "Aussentemp");
+        state.Output.Reason = "Aussentemp";
     }
     else if (inp.Inside.Humidity < config.HumInMin)
     {
         output = false;
-        //strcpy(state.Output.Reason, "Luftfeuchte");
+        state.Output.Reason = "Luftfeuchte";
     }
 
     state.Output.State = output;
     return output;
 }
 
-void ControlLogic::setConfig(Config config)
-{
-    this->config = config;
-}
 
 void setDewTemperature(EnvironmentInfo &envInfo)
 {
     if (isnanf(envInfo.Temperature) || isnanf(envInfo.Humidity))
         envInfo.DewPointTemperature = NAN;
 
-    float t = envInfo.Temperature;
-    float r = envInfo.Humidity;
+    const float t = envInfo.Temperature;
+    const float r = envInfo.Humidity;
 
     float a, b;
 
@@ -81,28 +77,28 @@ void setDewTemperature(EnvironmentInfo &envInfo)
         a = 7.5f;
         b = 237.3f;
     }
-    else if (t < 0)
+    else
     {
         a = 7.6f;
         b = 240.7f;
     }
 
     // Sättigungsdampfdruck in hPa
-    float sdd = 6.1078f * pow(10, (a * t) / (b + t));
+    const float sdd = 6.1078f * static_cast<float>(pow(10, (a * t) / (b + t)));
 
     // Dampfdruck in hPa
-    float dd = sdd * r * 0.01;
+    const float dd = sdd * r * 0.01f;
 
     // v-Parameter
-    float v = log10(dd / 6.1078f);
+    const float v = log10(dd / 6.1078f);
 
     // Taupunkttemperatur (°C)
-    float tt = (b * v) / (a - v);
+    const float tt = (b * v) / (a - v);
 
     envInfo.DewPointTemperature = tt;
 }
 
-void ControlLogic::setMeasurement(Measurement &meas)
+void ControlLogic::setMeasurement(const Measurement &meas) const
 {
     state.Input.Inside.Temperature = meas.Inside.Temperature + config.TempInOffset;
     state.Input.Inside.Humidity = meas.Inside.Humidity + config.HumInOffset;
@@ -115,5 +111,5 @@ void ControlLogic::setMeasurement(Measurement &meas)
 
 Config ControlLogic::getDefaultConfig()
 {
-    return Config();
+    return {};
 }

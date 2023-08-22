@@ -6,13 +6,12 @@
 class ControlLogic
 {
 public:
-    ControlLogic(State &state);
+    explicit ControlLogic(State &state);
 
-    void begin(Config config);
-    bool getState();
-    bool update();
+    void begin(const Config& configuration);
+    bool update() const;
     void setConfig(Config config);
-    void setMeasurement(Measurement &meas);
+    void setMeasurement(const Measurement &meas) const;
 
     static Config getDefaultConfig();
 private:
