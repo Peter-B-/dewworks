@@ -23,9 +23,9 @@ class MenuItem
 public:
     MenuItem(const char* name, float &value, float min, float max, float factor);
 
-    void select(long rotaryPos);
+    void select(const long rotaryPos);
 
-    void update(long rotrayPos) const;
+    void update(const long rotrayPos) const;
     void printHeader(char *buffer) const;
     void printValue(char *buffer) const;
 
@@ -35,6 +35,20 @@ private:
     float initialValue;
     float minimum, maximum, factor;
     long initialRotaryPos;
+};
+
+class MenuSelector
+{
+public:
+    MenuSelector(unsigned int pages);
+
+    unsigned int getPage(const long rotaryPos);
+    void setOffset(const long rotaryPos);
+
+private:
+    long rotaryOffset;
+    unsigned page;
+    const unsigned int pages;
 };
 
 class Display
@@ -47,6 +61,7 @@ public:
     void update(long rotaryPos);
 
     void buttonPressed();
+    void selectMenu();
     void buttonPressedLong();
 
 private:
@@ -77,6 +92,8 @@ private:
     MenuItem* currentMenuItem;
     const size_t menuItemCount = 11;
     MenuItem menuItems[11];
+
+    MenuSelector menuSelector;
 };
 
 #endif

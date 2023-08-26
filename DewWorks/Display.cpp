@@ -1,6 +1,6 @@
 #include "Display.h"
 
-unsigned getPage(const int value, const unsigned pages)
+unsigned getPageModulo(const int value, const unsigned pages)
 {
     int mod = value % (int)pages;
     if (mod < 0)
@@ -10,24 +10,40 @@ unsigned getPage(const int value, const unsigned pages)
     return mod;
 }
 
+MenuSelector::MenuSelector(unsigned int pages) : page(0), pages(pages)
+{
+}
+
+unsigned int MenuSelector::getPage(const long rotaryPos)
+{
+    page = getPageModulo(rotaryPos - rotaryOffset, pages);
+    return page;
+}
+
+void MenuSelector::setOffset(const long rotaryPos)
+{
+    rotaryOffset = rotaryPos - page;
+}
+
 Display::Display(State& state, Config& config)
     : state(state),
-    timer(1000),
-    config(config),
-    menuItems({
+      timer(1000),
+      config(config),
+      menuItems({
 
-        MenuItem(PSTR("K Temp innen"), config.TempInOffset, -5.0, 5.0, 0.1),
-        MenuItem(PSTR("K Temp aussen"), config.TempOutOffset, -5.0, 5.0, 0.1),
-        MenuItem(PSTR("K Feuchte innen"), config.HumInOffset, -10, 10.0, 1),
-        MenuItem(PSTR("K Feuchte aussen"), config.HumOutOffset, -10.0, 10.0, 1),
-        MenuItem(PSTR("\5\2. Minimum"), config.DeltaDewTempMin, 0.0, 10.0, 0.2),
-        MenuItem(PSTR("\5\2. Hysterese"), config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
-        MenuItem(PSTR("Feuchte in min"), config.HumInMin, 10.0, 80.0, 1),
-        MenuItem(PSTR("Feuchte Hyst"), config.HumInHyst, 0.0, 10.0, 0.2),
-        MenuItem(PSTR("Temp innen min"), config.TempInMin, -20.0, 25.0, 1),
-        MenuItem(PSTR("Temp aussen min"), config.TempOutMin, -20.0, 25.0, 1),
-        MenuItem(PSTR("Temp Hysterese"), config.TempHyst, 0.0, 5.0, 0.2),
-        })
+          MenuItem(PSTR("K Temp innen"), config.TempInOffset, -5.0, 5.0, 0.1),
+          MenuItem(PSTR("K Temp aussen"), config.TempOutOffset, -5.0, 5.0, 0.1),
+          MenuItem(PSTR("K Feuchte innen"), config.HumInOffset, -10, 10.0, 1),
+          MenuItem(PSTR("K Feuchte aussen"), config.HumOutOffset, -10.0, 10.0, 1),
+          MenuItem(PSTR("\5\2. Minimum"), config.DeltaDewTempMin, 0.0, 10.0, 0.2),
+          MenuItem(PSTR("\5\2. Hysterese"), config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
+          MenuItem(PSTR("Feuchte inn min"), config.HumInMin, 10.0, 80.0, 1),
+          MenuItem(PSTR("Feuchte Hyst"), config.HumInHyst, 0.0, 10.0, 0.2),
+          MenuItem(PSTR("Temp innen min"), config.TempInMin, -20.0, 25.0, 1),
+          MenuItem(PSTR("Temp aussen min"), config.TempOutMin, -20.0, 25.0, 1),
+          MenuItem(PSTR("Temp Hysterese"), config.TempHyst, 0.0, 5.0, 0.2),
+      }),
+        menuSelector(menuItemCount)
 {
 };
 
@@ -108,7 +124,7 @@ void Display::begin()
 
 void Display::selectMenuitem(const long rotaryPos)
 {
-    auto page = getPage(rotaryPos, menuItemCount);
+    const auto page = menuSelector.getPage(rotaryPos);
     currentMenuItem = &menuItems[page];
     currentMenuItem->select(rotaryPos);
 }
@@ -176,18 +192,22 @@ void Display::buttonPressed()
     if (mode == DisplayMode::Menu)
         mode = DisplayMode::ValueChange;
     else if (mode == DisplayMode::ValueChange)
-        mode = DisplayMode::Menu;
+        selectMenu();
 
     buttonWasPressed = true;
+}
+
+void Display::selectMenu()
+{
+    mode = DisplayMode::Menu;
+    menuSelector.setOffset(lastRotaryPos);
+    selectMenuitem(lastRotaryPos);
 }
 
 void Display::buttonPressedLong()
 {
     if (mode == DisplayMode::Measurement)
-    {
-        mode = DisplayMode::Menu;
-        selectMenuitem(lastRotaryPos);
-    }
+        selectMenu();
     else if (mode == DisplayMode::Menu)
         mode = DisplayMode::Measurement;
 
@@ -246,7 +266,7 @@ void Display::showMeasurement(const __FlashStringHelper* id, const EnvironmentIn
 
 void Display::showMeasurementPage(const long rotaryPos)
 {
-    const auto page = getPage(rotaryPos, 3);
+    const auto page = getPageModulo(rotaryPos, 3);
 
     if (page == 0)
         showMeasurement(F("Innen"), this->state.Input.Inside);
