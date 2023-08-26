@@ -42,6 +42,8 @@ class Display
 public:
     Display(State &state, Config &config);
     void begin();
+    void selectMenuitem(long rotaryPos);
+    void lightOff();
     void update(long rotaryPos);
 
     void buttonPressed();
@@ -54,6 +56,7 @@ private:
     Timer timer;
     char lcdBuffer[20];
     Config& config;
+    volatile bool buttonWasPressed = false;
 
     void showMeasurementPage(long rotaryPos);
     void showMeasurement(const __FlashStringHelper* id, const EnvironmentInfo envInfo);

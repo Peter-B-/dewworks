@@ -29,8 +29,6 @@ Display::Display(State& state, Config& config)
         MenuItem(PSTR("Temp Hysterese"), config.TempHyst, 0.0, 5.0, 0.2),
         })
 {
-    currentMenuItem = &menuItems[0];
-    currentMenuItem->select(lastRotaryPos);
 };
 
 void Display::begin()
@@ -108,37 +106,53 @@ void Display::begin()
     lcd.createChar(5, delta);
 }
 
+void Display::selectMenuitem(const long rotaryPos)
+{
+    auto page = getPage(rotaryPos, menuItemCount);
+    currentMenuItem = &menuItems[page];
+    currentMenuItem->select(rotaryPos);
+}
+
+void Display::lightOff()
+{
+    lcd.noBacklight();
+    lightIsOn = false;
+}
+
 void Display::update(const long rotaryPos)
 {
     const auto now = millis();
-    const bool shouldRefresh = timer.shouldRun(now);
+    const bool refreshTimer = timer.shouldRun(now);
     const bool rotationInput = rotaryPos != lastRotaryPos;
+    const bool refreshUi = refreshTimer || rotationInput || buttonWasPressed;
 
-    if (shouldRefresh)
+    if (refreshTimer)
     {
         if (lightIsOn && now - lightOnTime > lightOnLimit)
-        {
-            lcd.noBacklight();
-            lightIsOn = false;
-        }
+            lightOff();
     }
+
+    if (rotationInput || buttonWasPressed)
+        lightOn();
 
     if (rotationInput)
     {
         lastRotaryPos = rotaryPos;
-        lightOn();
 
         Serial.println(rotaryPos);
     }
 
     if (rotationInput && mode == DisplayMode::Menu)
     {
-        auto page = getPage(rotaryPos, menuItemCount);
-        currentMenuItem = &menuItems[page];
-        currentMenuItem->select(rotaryPos);
+        selectMenuitem(rotaryPos);
     }
 
-    if (shouldRefresh || rotationInput)
+    if (rotationInput && mode == DisplayMode::ValueChange)
+    {
+        currentMenuItem->update(rotaryPos);
+    }
+
+    if (refreshUi)
     {
         switch (mode)
         {
@@ -153,6 +167,8 @@ void Display::update(const long rotaryPos)
             break;
         }
     }
+
+    buttonWasPressed = false;
 }
 
 void Display::buttonPressed()
@@ -161,14 +177,21 @@ void Display::buttonPressed()
         mode = DisplayMode::ValueChange;
     else if (mode == DisplayMode::ValueChange)
         mode = DisplayMode::Menu;
+
+    buttonWasPressed = true;
 }
 
 void Display::buttonPressedLong()
 {
     if (mode == DisplayMode::Measurement)
+    {
         mode = DisplayMode::Menu;
+        selectMenuitem(lastRotaryPos);
+    }
     else if (mode == DisplayMode::Menu)
         mode = DisplayMode::Measurement;
+
+    buttonWasPressed = true;
 }
 
 void Display::lightOn()
@@ -198,8 +221,8 @@ void Display::showMeasurement(const __FlashStringHelper* id, const EnvironmentIn
 
     strcpy_P(lcdBuffer, (const char*)id);
     printNumber(lcdBuffer + 9, envInfo.DewPointTemperature, 3, 1);
-    lcdBuffer[8] = 1;
-    lcdBuffer[14] = 0;
+    lcdBuffer[8] = 2;
+    lcdBuffer[14] = 1;
     lcdBuffer[15] = 'C';
 
     lcd.setCursor(0, 0);
@@ -214,7 +237,7 @@ void Display::showMeasurement(const __FlashStringHelper* id, const EnvironmentIn
 
     lcdBuffer[8] = 'T';
     printNumber(lcdBuffer + 9, envInfo.Temperature, 3, 1);
-    lcdBuffer[14] = 0;
+    lcdBuffer[14] = 1;
     lcdBuffer[15] = 'C';
 
     lcd.setCursor(0, 1);
@@ -263,8 +286,8 @@ void Display::showMenu(long rotaryPos)
     if (mode == DisplayMode::ValueChange)
     {
         // Show arrows
-        lcdBuffer[0] = 3;
-        lcdBuffer[15] = 2;
+        lcdBuffer[0] = 4;
+        lcdBuffer[15] = 3;
     }
 
     lcd.setCursor(0, 1);
