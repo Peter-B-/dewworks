@@ -365,5 +365,5 @@ void MenuItem::printHeader(char* buffer) const
 
 void MenuItem::printValue(char* buffer) const
 {
-    printNumber(buffer, value, 5, 1);
+    printNumber(buffer+2, value, 5, 1);
 }
