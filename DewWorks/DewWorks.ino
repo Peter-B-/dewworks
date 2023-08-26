@@ -33,7 +33,7 @@ State state;
 Config config;
 
 Display display(state, config);
-ControlLogic control(state);
+ControlLogic control(state, config);
 
 Timer timerMeasure(500);
 
@@ -114,7 +114,7 @@ void setup()
 
     print(config);
 
-    control.begin(config);
+    control.begin();
 
     dhtIn.begin();
     dhtOut.begin();

@@ -2,7 +2,7 @@
 
 #include "arduino.h"
 
-ControlLogic::ControlLogic(State &state) : state(state)
+ControlLogic::ControlLogic(State &state, Config& configuration) : state(state), config(configuration)
 {
 }
 
@@ -14,9 +14,8 @@ constexpr char reason_temp_in[] PROGMEM = "Innentemp";
 constexpr char reason_temp_out[] PROGMEM = "Aussentemp";
 constexpr char reason_humidity[] PROGMEM = "Luftfeuchte";
 
-void ControlLogic::begin(const Config& configuration)
+void ControlLogic::begin() const
 {
-    this->config = configuration;
     strcpy_P(state.Output.Reason, reason_off);
     Serial.print("Reason: ");
     Serial.println(state.Output.Reason);
