@@ -3,7 +3,7 @@
 
 unsigned getPageModulo(const int value, const unsigned pages)
 {
-    int mod = value % (int)pages;
+    int mod = value % static_cast<int>(pages);
     if (mod < 0)
     {
         mod += pages;
@@ -28,24 +28,24 @@ void MenuSelector::setOffset(const long rotaryPos)
 
 Display::Display(State& state, Config& config)
     : state(state),
-    timer(1000),
-    config(config),
-    menuItems({
+      timer(1000),
+      config(config),
+      menuItems({
 
-        MenuItem(PSTR("K Temp innen"), config.TempInOffset, -5.0, 5.0, 0.1),
-        MenuItem(PSTR("K Temp aussen"), config.TempOutOffset, -5.0, 5.0, 0.1),
-        MenuItem(PSTR("K Feuchte innen"), config.HumInOffset, -10, 10.0, 1),
-        MenuItem(PSTR("K Feuchte aussen"), config.HumOutOffset, -10.0, 10.0, 1),
-        MenuItem(PSTR("\5\2. Minimum"), config.DeltaDewTempMin, 0.0, 10.0, 0.2),
-        MenuItem(PSTR("\5\2. Hysterese"), config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
-        MenuItem(PSTR("Feuchte inn min"), config.HumInMin, 10.0, 80.0, 1),
-        MenuItem(PSTR("Feuchte Hyst"), config.HumInHyst, 0.0, 10.0, 0.2),
-        MenuItem(PSTR("Temp innen min"), config.TempInMin, -20.0, 25.0, 1),
-        MenuItem(PSTR("Temp aussen min"), config.TempOutMin, -20.0, 25.0, 1),
-        MenuItem(PSTR("Temp Hysterese"), config.TempHyst, 0.0, 5.0, 0.2),
-        MenuItem(PSTR("Wiederherstellen"))
-        }),
-    menuSelector(menuItemCount)
+          MenuItem(PSTR("K Temp innen"), config.TempInOffset, -5.0, 5.0, 0.1),
+          MenuItem(PSTR("K Temp aussen"), config.TempOutOffset, -5.0, 5.0, 0.1),
+          MenuItem(PSTR("K Feuchte innen"), config.HumInOffset, -10, 10.0, 1),
+          MenuItem(PSTR("K Feuchte aussen"), config.HumOutOffset, -10.0, 10.0, 1),
+          MenuItem(PSTR("\5\2. Minimum"), config.DeltaDewTempMin, 0.0, 10.0, 0.2),
+          MenuItem(PSTR("\5\2. Hysterese"), config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
+          MenuItem(PSTR("Feuchte inn min"), config.HumInMin, 10.0, 80.0, 1),
+          MenuItem(PSTR("Feuchte Hyst"), config.HumInHyst, 0.0, 10.0, 0.2),
+          MenuItem(PSTR("Temp innen min"), config.TempInMin, -20.0, 25.0, 1),
+          MenuItem(PSTR("Temp aussen min"), config.TempOutMin, -20.0, 25.0, 1),
+          MenuItem(PSTR("Temp Hysterese"), config.TempHyst, 0.0, 5.0, 0.2),
+          MenuItem(PSTR("Wiederherstellen"))
+      }),
+      menuSelector(menuItemCount)
 {
 };
 
@@ -64,7 +64,8 @@ void Display::begin()
         B00000,
         B00000,
         B00000,
-        B00000 }; // empty character: Hack so that \0 will be printed as space
+        B00000
+    }; // empty character: Hack so that \0 will be printed as space
     lcd.createChar(0, blank);
 
 
@@ -76,7 +77,8 @@ void Display::begin()
         B00000,
         B00000,
         B00000,
-        B00000 }; // character °
+        B00000
+    }; // character °
     lcd.createChar(1, deg);
 
     byte tau[8] = {
@@ -87,7 +89,8 @@ void Display::begin()
         B00100,
         B00100,
         B00110,
-        B00000 }; // character tau
+        B00000
+    }; // character tau
     lcd.createChar(2, tau);
 
     byte left[8] = {
@@ -98,7 +101,8 @@ void Display::begin()
         B01111,
         B00111,
         B00011,
-        B00001 }; // left arrow
+        B00001
+    }; // left arrow
     lcd.createChar(3, left);
 
     byte right[8] = {
@@ -109,7 +113,8 @@ void Display::begin()
         B11110,
         B11100,
         B11000,
-        B10000 }; // right arrow
+        B10000
+    }; // right arrow
     lcd.createChar(4, right);
 
     byte delta[8] = {
@@ -120,7 +125,8 @@ void Display::begin()
         B10001,
         B10001,
         B11111,
-        B00000 }; // Delta
+        B00000
+    }; // Delta
     lcd.createChar(5, delta);
 }
 
@@ -297,9 +303,9 @@ void Display::showState()
 {
     clearBuffer();
     if (state.Output.State)
-        strcpy_P(lcdBuffer, (const char*)F("An"));
+        strcpy_P(lcdBuffer, (const char*)(F("An")));
     else
-        strcpy_P(lcdBuffer, (const char*)F("Aus"));
+        strcpy_P(lcdBuffer, (const char*)(F("Aus")));
 
     lcd.setCursor(0, 0);
     lcd.write(lcdBuffer, 16);
@@ -339,21 +345,21 @@ void Display::clearBuffer()
 
 MenuItem::MenuItem(const char* name, float& value, const float minimum, const float maximum, const float factor)
     : isResetDefault(false),
-    name(name),
-    value(value),
-    initialValue(0),
-    minimum(minimum),
-    maximum(maximum),
-    factor(factor),
-    initialRotaryPos(0)
+      name(name),
+      value(value),
+      initialValue(0),
+      minimum(minimum),
+      maximum(maximum),
+      factor(factor),
+      initialRotaryPos(0)
 {
 }
 
 MenuItem::MenuItem(const char* name)
     : isResetDefault(true),
-    name(name),
-    value(minimum), initialValue(0), minimum(0), maximum(0), factor(0),
-    initialRotaryPos(0)
+      name(name),
+      value(minimum), initialValue(0), minimum(0), maximum(0), factor(0),
+      initialRotaryPos(0)
 {
 }
 

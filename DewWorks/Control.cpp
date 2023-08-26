@@ -2,7 +2,7 @@
 
 #include "arduino.h"
 
-ControlLogic::ControlLogic(State &state, Config& configuration) : state(state), config(configuration)
+ControlLogic::ControlLogic(State& state, Config& configuration) : state(state), config(configuration)
 {
 }
 
@@ -25,7 +25,7 @@ bool ControlLogic::update() const
 {
     bool output = state.Output.State;
 
-    const ControlInput &inp = state.Input;
+    const ControlInput& inp = state.Input;
     const float deltaDewTemp = inp.Inside.DewPointTemperature - inp.Outside.DewPointTemperature;
     if (isnanf(deltaDewTemp))
     {
@@ -71,7 +71,7 @@ bool ControlLogic::update() const
 }
 
 
-void setDewTemperature(EnvironmentInfo &envInfo)
+void setDewTemperature(EnvironmentInfo& envInfo)
 {
     if (isnanf(envInfo.Temperature) || isnanf(envInfo.Humidity))
         envInfo.DewPointTemperature = NAN;
@@ -107,7 +107,7 @@ void setDewTemperature(EnvironmentInfo &envInfo)
     envInfo.DewPointTemperature = tt;
 }
 
-void ControlLogic::setMeasurement(const Measurement &meas) const
+void ControlLogic::setMeasurement(const Measurement& meas) const
 {
     state.Input.Inside.Temperature = meas.Inside.Temperature + config.TempInOffset;
     state.Input.Inside.Humidity = meas.Inside.Humidity + config.HumInOffset;

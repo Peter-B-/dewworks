@@ -1,4 +1,3 @@
-
 #include <EEPROM.h>
 #include <avr/wdt.h>
 
@@ -95,10 +94,11 @@ void onPressed()
     display.buttonPressed();
 }
 
-int freeMemory() {
-    extern int __heap_start, * __brkval;
+int freeMemory()
+{
+    extern int __heap_start, *__brkval;
     int v;
-    return (int)&v - (__brkval == 0 ? (int)&__heap_start : (int)__brkval);
+    return (int)&v - (__brkval == nullptr ? (int)&__heap_start : (int)__brkval);
 }
 
 
@@ -134,8 +134,6 @@ void setup()
 }
 
 
-
-
 void loop()
 {
     auto now = millis();
@@ -159,6 +157,5 @@ void loop()
         bool output = false;
         output = control.update();
         relais.set(output);
-
     }
 }

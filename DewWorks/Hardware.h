@@ -12,6 +12,7 @@ public:
     explicit DhtSensor(uint8_t pin);
     void begin();
     SensorMeasurement measure();
+
 private:
     DHT_Unified dht;
     float getTemperature();
@@ -24,6 +25,7 @@ public:
     explicit Relais(uint8_t pin);
     void begin() const;
     void set(bool on) const;
+
 private:
     uint8_t pin;
 };

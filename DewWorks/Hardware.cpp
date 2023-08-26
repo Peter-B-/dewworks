@@ -36,7 +36,7 @@ DhtSensor::DhtSensor(const uint8_t pin)
 
 Relais::Relais(const uint8_t pin)
 {
-    this->pin=pin;
+    this->pin = pin;
 }
 
 void Relais::begin() const

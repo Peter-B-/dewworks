@@ -21,20 +21,20 @@ namespace DisplayMode
 class MenuItem
 {
 public:
-    MenuItem(const char* name, float &value, float min, float max, float factor);
+    MenuItem(const char* name, float& value, float min, float max, float factor);
     MenuItem(const char* name);
 
-    void select(const long rotaryPos);
+    void select(long rotaryPos);
 
-    void update(const long rotrayPos) const;
-    void printHeader(char *buffer) const;
-    void printValue(char *buffer) const;
+    void update(long rotrayPos) const;
+    void printHeader(char* buffer) const;
+    void printValue(char* buffer) const;
 
     const bool isResetDefault;
 
 private:
     const char* name;
-    float &value;
+    float& value;
     float initialValue;
     float minimum, maximum, factor;
     long initialRotaryPos;
@@ -45,8 +45,8 @@ class MenuSelector
 public:
     MenuSelector(unsigned int pages);
 
-    unsigned int getPage(const long rotaryPos);
-    void setOffset(const long rotaryPos);
+    unsigned int getPage(long rotaryPos);
+    void setOffset(long rotaryPos);
 
 private:
     long rotaryOffset;
@@ -58,9 +58,9 @@ private:
 class Display
 {
 public:
-    typedef void (*callback_t)();
+    using callback_t = void(*)();
 
-    Display(State &state, Config &config);
+    Display(State& state, Config& config);
     void begin();
     void selectMenuitem(long rotaryPos);
     void lightOff();
@@ -73,7 +73,7 @@ public:
     void onSaveConfig(callback_t callback);
 
 private:
-    State &state;
+    State& state;
 
     hd44780_I2Cexp lcd;
     Timer timer;
@@ -83,7 +83,7 @@ private:
     callback_t saveConfigCallback = nullptr;
 
     void showMeasurementPage(long rotaryPos);
-    void showMeasurement(const __FlashStringHelper* id, const EnvironmentInfo envInfo);
+    void showMeasurement(const __FlashStringHelper* id, EnvironmentInfo envInfo);
     void showState();
 
     void showMenu(long rotaryPos);

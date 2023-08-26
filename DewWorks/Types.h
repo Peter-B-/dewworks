@@ -3,12 +3,14 @@
 
 #include <Arduino.h>
 
-struct SensorMeasurement{
+struct SensorMeasurement
+{
     float Temperature{};
     float Humidity{};
 };
 
-struct Measurement{
+struct Measurement
+{
     SensorMeasurement Inside{};
     SensorMeasurement Outside{};
 };
@@ -38,10 +40,11 @@ struct State
     ControlOutput Output{};
 };
 
-struct Config{
+struct Config
+{
     float DeltaDewTempMin{5};
     float DeltaDewTempHyst{1};
-    
+
     float HumInMin{40};
     float HumInHyst{5};
 
