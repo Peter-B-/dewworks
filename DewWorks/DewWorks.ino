@@ -102,6 +102,12 @@ int freeMemory() {
 }
 
 
+void saveConfig()
+{
+    Serial.println("Save config");
+    EEPROM.put(0, config);
+}
+
 void setup()
 {
     wdt_enable(WDTO_2S); // Set watchdog to 2 seconds
@@ -120,6 +126,7 @@ void setup()
     dhtOut.begin();
     relais.begin();
     display.begin();
+    display.onSaveConfig(saveConfig);
 
     button.begin();
     button.onPressedFor(500, onPressedLong);
@@ -142,8 +149,8 @@ void loop()
 
     if (timerMeasure.shouldRun(now))
     {
-        Serial.print(F("free: "));
-        Serial.println(freeMemory());
+        // Serial.print(F("free: "));
+        // Serial.println(freeMemory());
 
         measurement.Inside = dhtIn.measure();
         measurement.Outside = dhtOut.measure();

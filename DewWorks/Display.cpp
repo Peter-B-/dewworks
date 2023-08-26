@@ -1,4 +1,5 @@
 #include "Display.h"
+#include "Control.h"
 
 unsigned getPageModulo(const int value, const unsigned pages)
 {
@@ -27,23 +28,24 @@ void MenuSelector::setOffset(const long rotaryPos)
 
 Display::Display(State& state, Config& config)
     : state(state),
-      timer(1000),
-      config(config),
-      menuItems({
+    timer(1000),
+    config(config),
+    menuItems({
 
-          MenuItem(PSTR("K Temp innen"), config.TempInOffset, -5.0, 5.0, 0.1),
-          MenuItem(PSTR("K Temp aussen"), config.TempOutOffset, -5.0, 5.0, 0.1),
-          MenuItem(PSTR("K Feuchte innen"), config.HumInOffset, -10, 10.0, 1),
-          MenuItem(PSTR("K Feuchte aussen"), config.HumOutOffset, -10.0, 10.0, 1),
-          MenuItem(PSTR("\5\2. Minimum"), config.DeltaDewTempMin, 0.0, 10.0, 0.2),
-          MenuItem(PSTR("\5\2. Hysterese"), config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
-          MenuItem(PSTR("Feuchte inn min"), config.HumInMin, 10.0, 80.0, 1),
-          MenuItem(PSTR("Feuchte Hyst"), config.HumInHyst, 0.0, 10.0, 0.2),
-          MenuItem(PSTR("Temp innen min"), config.TempInMin, -20.0, 25.0, 1),
-          MenuItem(PSTR("Temp aussen min"), config.TempOutMin, -20.0, 25.0, 1),
-          MenuItem(PSTR("Temp Hysterese"), config.TempHyst, 0.0, 5.0, 0.2),
-      }),
-        menuSelector(menuItemCount)
+        MenuItem(PSTR("K Temp innen"), config.TempInOffset, -5.0, 5.0, 0.1),
+        MenuItem(PSTR("K Temp aussen"), config.TempOutOffset, -5.0, 5.0, 0.1),
+        MenuItem(PSTR("K Feuchte innen"), config.HumInOffset, -10, 10.0, 1),
+        MenuItem(PSTR("K Feuchte aussen"), config.HumOutOffset, -10.0, 10.0, 1),
+        MenuItem(PSTR("\5\2. Minimum"), config.DeltaDewTempMin, 0.0, 10.0, 0.2),
+        MenuItem(PSTR("\5\2. Hysterese"), config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
+        MenuItem(PSTR("Feuchte inn min"), config.HumInMin, 10.0, 80.0, 1),
+        MenuItem(PSTR("Feuchte Hyst"), config.HumInHyst, 0.0, 10.0, 0.2),
+        MenuItem(PSTR("Temp innen min"), config.TempInMin, -20.0, 25.0, 1),
+        MenuItem(PSTR("Temp aussen min"), config.TempOutMin, -20.0, 25.0, 1),
+        MenuItem(PSTR("Temp Hysterese"), config.TempHyst, 0.0, 5.0, 0.2),
+        MenuItem(PSTR("Wiederherstellen"))
+        }),
+    menuSelector(menuItemCount)
 {
 };
 
@@ -197,7 +199,12 @@ void Display::selectMenu()
 void Display::buttonPressed()
 {
     if (mode == DisplayMode::Menu)
-        mode = DisplayMode::ValueChange;
+    {
+        if (currentMenuItem->isResetDefault)
+            config = ControlLogic::getDefaultConfig();
+        else
+            mode = DisplayMode::ValueChange;
+    }
     else if (mode == DisplayMode::ValueChange)
         selectMenu();
 
@@ -331,23 +338,37 @@ void Display::clearBuffer()
 }
 
 MenuItem::MenuItem(const char* name, float& value, const float minimum, const float maximum, const float factor)
-    :name(name),
+    : isResetDefault(false),
+    name(name),
     value(value),
     initialValue(0),
     minimum(minimum),
     maximum(maximum),
-    factor(factor), initialRotaryPos(0)
+    factor(factor),
+    initialRotaryPos(0)
+{
+}
+
+MenuItem::MenuItem(const char* name)
+    : isResetDefault(true),
+    name(name),
+    value(minimum), initialValue(0), minimum(0), maximum(0), factor(0),
+    initialRotaryPos(0)
 {
 }
 
 void MenuItem::select(const long rotaryPos)
 {
+    if (isResetDefault) return;
+
     this->initialRotaryPos = rotaryPos;
     this->initialValue = value;
 }
 
 void MenuItem::update(const long rotrayPos) const
 {
+    if (isResetDefault) return;
+
     float v = static_cast<float>(rotrayPos - initialRotaryPos) * factor + initialValue;
 
     if (v > maximum)
@@ -365,5 +386,10 @@ void MenuItem::printHeader(char* buffer) const
 
 void MenuItem::printValue(char* buffer) const
 {
-    printNumber(buffer+2, value, 5, 1);
+    if (isResetDefault)
+    {
+        strcpy_P(buffer + 4, PSTR("Reset?"));
+    }
+    else
+        printNumber(buffer + 2, value, 5, 1);
 }

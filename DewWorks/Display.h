@@ -22,12 +22,15 @@ class MenuItem
 {
 public:
     MenuItem(const char* name, float &value, float min, float max, float factor);
+    MenuItem(const char* name);
 
     void select(const long rotaryPos);
 
     void update(const long rotrayPos) const;
     void printHeader(char *buffer) const;
     void printValue(char *buffer) const;
+
+    const bool isResetDefault;
 
 private:
     const char* name;
@@ -50,6 +53,7 @@ private:
     unsigned page;
     const unsigned int pages;
 };
+
 
 class Display
 {
@@ -95,8 +99,8 @@ private:
     DisplayMode::Mode mode = DisplayMode::Measurement;
 
     MenuItem* currentMenuItem;
-    const size_t menuItemCount = 11;
-    MenuItem menuItems[11];
+    const size_t menuItemCount = 12;
+    MenuItem menuItems[12];
 
     MenuSelector menuSelector;
 };
