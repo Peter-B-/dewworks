@@ -136,7 +136,7 @@ void loop()
 
     button.read();
     int32_t enc = encoder.read();
-    int32_t newPosition = enc >> 2;
+    int32_t newPosition = -(enc >> 2);
 
     display.update(newPosition);
 
