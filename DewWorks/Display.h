@@ -93,7 +93,7 @@ private:
 
     bool lightIsOn = true;
     unsigned long lightOnTime;
-    unsigned long lightOnLimit = 15000;
+    unsigned long lightOnLimit = 60000;
 
     long lastRotaryPos = 0;
     DisplayMode::Mode mode = DisplayMode::Measurement;
