@@ -187,6 +187,13 @@ void Display::update(const long rotaryPos)
     buttonWasPressed = false;
 }
 
+void Display::selectMenu()
+{
+    mode = DisplayMode::Menu;
+    menuSelector.setOffset(lastRotaryPos);
+    selectMenuitem(lastRotaryPos);
+}
+
 void Display::buttonPressed()
 {
     if (mode == DisplayMode::Menu)
@@ -197,21 +204,24 @@ void Display::buttonPressed()
     buttonWasPressed = true;
 }
 
-void Display::selectMenu()
-{
-    mode = DisplayMode::Menu;
-    menuSelector.setOffset(lastRotaryPos);
-    selectMenuitem(lastRotaryPos);
-}
-
 void Display::buttonPressedLong()
 {
     if (mode == DisplayMode::Measurement)
         selectMenu();
     else if (mode == DisplayMode::Menu)
+    {
         mode = DisplayMode::Measurement;
 
+        if (saveConfigCallback)
+            saveConfigCallback();
+    }
+
     buttonWasPressed = true;
+}
+
+void Display::onSaveConfig(const callback_t callback)
+{
+    saveConfigCallback = callback;
 }
 
 void Display::lightOn()

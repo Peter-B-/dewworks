@@ -54,6 +54,8 @@ private:
 class Display
 {
 public:
+    typedef void (*callback_t)();
+
     Display(State &state, Config &config);
     void begin();
     void selectMenuitem(long rotaryPos);
@@ -64,6 +66,8 @@ public:
     void selectMenu();
     void buttonPressedLong();
 
+    void onSaveConfig(callback_t callback);
+
 private:
     State &state;
 
@@ -72,6 +76,7 @@ private:
     char lcdBuffer[20];
     Config& config;
     volatile bool buttonWasPressed = false;
+    callback_t saveConfigCallback = nullptr;
 
     void showMeasurementPage(long rotaryPos);
     void showMeasurement(const __FlashStringHelper* id, const EnvironmentInfo envInfo);
