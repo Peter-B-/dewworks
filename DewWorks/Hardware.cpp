@@ -47,5 +47,7 @@ void Relais::begin() const
 void Relais::set(const bool on) const
 {
     digitalWrite(LED_BUILTIN, on);
-    digitalWrite(this->pin, on);
+
+    // The used SSR is low active.
+    digitalWrite(this->pin, !on);
 }
