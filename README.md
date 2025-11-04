@@ -12,4 +12,8 @@ The project is inspired by and based on an atricle in [the Make magazin](https:/
 - [KY-040 Rotary encoder](https://www.az-delivery.de/en/products/drehimpulsgeber-modul)
 - [3 way switch](https://www.reichelt.de/miniatur-kippschalter-ein-aus-ein-3-a-250-v-goobay-10022-p285989.html)
 
-
+## Arduion Libraries
+- EasyButton by Evert Arias
+- Encoder by Paul Stoffregen
+- DHT sensor library by Adafruit
+- hd44780 by Bill Perry
