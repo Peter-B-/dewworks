@@ -1,5 +1,4 @@
 #include "Control.h"
-
 #include "arduino.h"
 
 ControlLogic::ControlLogic(State& state, Config& configuration) : state(state), config(configuration)
@@ -13,16 +12,51 @@ constexpr char reason_dew[] PROGMEM = "Taupunkt";
 constexpr char reason_temp_in[] PROGMEM = "Innentemp";
 constexpr char reason_temp_out[] PROGMEM = "Aussentemp";
 constexpr char reason_humidity[] PROGMEM = "Luftfeuchte";
+constexpr char reason_mode_off[] PROGMEM = "Modus: Aus";
+constexpr char reason_mode_on[] PROGMEM = "Modus: An";
+
 
 void ControlLogic::begin() const
 {
     strcpy_P(state.Output.Reason, reason_off);
-    Serial.print("Reason: ");
-    Serial.println(state.Output.Reason);
 }
 
-bool ControlLogic::update() const
+bool ControlLogic::update(OperationMode mode)
 {
+    if (state.Mode != mode)
+    {
+        Serial.print(F("Mode changed: "));
+        switch (mode)
+        {
+        case OperationMode::Off:
+            strcpy_P(state.Output.Reason, reason_mode_off);
+            Serial.println(F("Off"));
+            break;
+        case OperationMode::Auto:
+            // set it to "still off" until we evaluate the conditions
+            strcpy_P(state.Output.Reason, reason_off);
+            Serial.println(F("Auto"));
+            break;
+        case OperationMode::On:
+            strcpy_P(state.Output.Reason, reason_mode_on);
+            Serial.println(F("On"));
+            break;
+        }
+
+        state.Mode = mode;
+    }
+
+    if (mode == OperationMode::Off)
+    {
+        state.Output.State = false;
+        return false;
+    }
+    else if (mode == OperationMode::On)
+    {
+        state.Output.State = true;
+        return true;
+    }
+
     bool output = state.Output.State;
 
     const ControlInput& inp = state.Input;
@@ -36,7 +70,8 @@ bool ControlLogic::update() const
         deltaDewTemp > (config.DeltaDewTempMin + config.DeltaDewTempHyst) &&
         inp.Inside.Temperature > (config.TempInMin + config.TempHyst) &&
         inp.Outside.Temperature > (config.TempOutMin + config.TempHyst) &&
-        inp.Inside.Humidity > (config.HumInMin + config.HumInHyst))
+        inp.Inside.Humidity > (config.HumInMin + config.HumInHyst) &&
+        !output)
     {
         output = true;
         strcpy_P(state.Output.Reason, reason_on);
@@ -107,7 +142,7 @@ void setDewTemperature(EnvironmentInfo& envInfo)
     envInfo.DewPointTemperature = tt;
 }
 
-void ControlLogic::setMeasurement(const Measurement& meas) const
+void ControlLogic::setMeasurement(const Measurement& meas)
 {
     state.Input.Inside.Temperature = meas.Inside.Temperature + config.TempInOffset;
     state.Input.Inside.Humidity = meas.Inside.Humidity + config.HumInOffset;

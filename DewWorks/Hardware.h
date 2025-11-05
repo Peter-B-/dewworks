@@ -19,15 +19,28 @@ private:
     float getHumidity();
 };
 
-class Relais
+class Output
 {
 public:
-    explicit Relais(uint8_t pin);
+    explicit Output(uint8_t pin, Config& configuration);
     void begin() const;
     void set(bool on) const;
 
 private:
     uint8_t pin;
+    Config& config;
 };
+
+class ModeSwitch
+{
+public:
+    explicit ModeSwitch(uint8_t pin);
+    void begin() const;
+    OperationMode read() const;
+
+private:
+    uint8_t pin;
+};
+
 
 #endif

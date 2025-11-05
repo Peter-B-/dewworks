@@ -34,10 +34,17 @@ struct ControlOutput
     char Reason[20]{};
 };
 
+enum class OperationMode {
+    Off,
+    Auto,
+    On
+};
+
 struct State
 {
     ControlInput Input{};
     ControlOutput Output{};
+    OperationMode Mode{OperationMode::Auto};
 };
 
 struct Config
@@ -56,6 +63,9 @@ struct Config
     float TempOutOffset{0};
     float HumInOffset{0};
     float HumOutOffset{0};
+
+    int16_t PwmRatio{50};
 };
+
 
 #endif

@@ -9,8 +9,8 @@ public:
     explicit ControlLogic(State& state, Config& configuration);
 
     void begin() const;
-    bool update() const;
-    void setMeasurement(const Measurement& meas) const;
+    bool update(OperationMode mode);
+    void setMeasurement(const Measurement& meas);
 
     static Config getDefaultConfig();
 

@@ -34,20 +34,45 @@ DhtSensor::DhtSensor(const uint8_t pin)
 {
 }
 
-Relais::Relais(const uint8_t pin)
+
+
+Output::Output(uint8_t pin, Config &configuration)
+    : pin(pin), config(configuration)
 {
-    this->pin = pin;
 }
 
-void Relais::begin() const
+void Output::begin() const
 {
-    pinMode(this->pin, OUTPUT);
+    //pinMode(this->pin, OUTPUT);
 }
 
-void Relais::set(const bool on) const
+void Output::set(const bool on) const
 {
-    digitalWrite(LED_BUILTIN, on);
+    //digitalWrite(LED_BUILTIN, on);
 
-    // The used SSR is low active.
-    digitalWrite(this->pin, !on);
+    //analogWrite(this->pin, on ? this->config.PwmRatio * 255 / 100 : 0);
+}
+
+
+
+ModeSwitch::ModeSwitch(uint8_t pin)
+    : pin(pin)
+{
+}
+
+void ModeSwitch::begin() const
+{
+    pinMode(this->pin, INPUT);
+}
+
+OperationMode ModeSwitch::read() const
+{
+    const int switchValue = analogRead(this->pin);
+
+    if (switchValue < 341)
+        return OperationMode::Off;
+    else if (switchValue < 682)
+        return OperationMode::Auto;
+    else
+        return OperationMode::On;
 }
