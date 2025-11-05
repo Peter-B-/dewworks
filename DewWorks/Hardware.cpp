@@ -1,3 +1,5 @@
+#include <Arduino.h>
+#include <avr/io.h>
 #include "Hardware.h"
 
 void DhtSensor::begin()
@@ -43,14 +45,58 @@ Output::Output(uint8_t pin, Config &configuration)
 
 void Output::begin() const
 {
-    //pinMode(this->pin, OUTPUT);
+    pinMode(this->pin, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
+
+    // Set up Timer1 for ~25kHz PWM on Pin 9 or 10
+    if (this->pin == 9 || this->pin == 10) {
+        // Fast PWM, TOP=ICR1, non-inverting
+        TCCR1A = 0;
+        TCCR1B = 0;
+        TCCR1A |= (1 << WGM11);
+        TCCR1B |= (1 << WGM12) | (1 << WGM13) | (1 << CS10); // No prescaler
+        ICR1 = 639; // 16MHz/(25kHz)-1 = 639
+        if (this->pin == 9) {
+            TCCR1A |= (1 << COM1A1); // Non-inverting on OC1A (Pin 9)
+        } else {
+            TCCR1A |= (1 << COM1B1); // Non-inverting on OC1B (Pin 10)
+        }
+        // Start with 0% duty
+        if (this->pin == 9) {
+            OCR1A = 0;
+        } else {
+            OCR1B = 0;
+        }
+    } else {
+        analogWrite(this->pin, 0);
+    }
 }
 
 void Output::set(const bool on) const
 {
-    //digitalWrite(LED_BUILTIN, on);
+    digitalWrite(LED_BUILTIN, on);
 
-    //analogWrite(this->pin, on ? this->config.PwmRatio * 255 / 100 : 0);
+    if (this->pin == 9 || this->pin == 10) {
+        // Use Timer1 for high-frequency PWM
+        
+        uint16_t value;
+        
+        if (!on)
+            value = 0;
+        else if (this->config.PwmRatio >= 100)
+            value = 639;
+        else
+            value = this->config.PwmRatio * 6; // * 6 is an approximation of 639 / 100;
+        
+        if (this->pin == 9) {
+            OCR1A = value;
+        } else {
+            OCR1B = value;
+        }
+    } else {
+        const int16_t value = on ? this->config.PwmRatio * 255 / 100 : 0;
+        analogWrite(this->pin, value);
+    }
 }
 
 
