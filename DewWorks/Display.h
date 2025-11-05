@@ -75,6 +75,8 @@ public:
 private:
     State& state;
 
+    bool withDisplay = true;
+
     hd44780_I2Cexp lcd;
     Timer timer;
     char lcdBuffer[20];

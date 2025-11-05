@@ -53,7 +53,13 @@ void Display::begin()
 {
     const auto status = lcd.begin(16, 2);
     if (status)
-        hd44780::fatalError(status);
+    {
+        Serial.print(F("LCD init failed: "));
+        Serial.println(status);
+
+        //hd44780::fatalError(status);
+        withDisplay = false;
+    }
 
 
     byte blank[8] = {
@@ -145,6 +151,8 @@ void Display::lightOff()
 
 void Display::update(const long rotaryPos)
 {
+    if (!withDisplay) return;
+
     const auto now = millis();
     const bool refreshTimer = timer.shouldRun(now);
     const bool rotationInput = rotaryPos != lastRotaryPos;
@@ -204,6 +212,8 @@ void Display::selectMenu()
 
 void Display::buttonPressed()
 {
+    if (!withDisplay) return;
+
     if (mode == DisplayMode::Menu)
     {
         if (currentMenuItem->isResetDefault)
@@ -219,6 +229,8 @@ void Display::buttonPressed()
 
 void Display::buttonPressedLong()
 {
+    if (!withDisplay) return;
+
     if (mode == DisplayMode::Measurement)
         selectMenu();
     else if (mode == DisplayMode::Menu)
