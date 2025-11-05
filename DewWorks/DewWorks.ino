@@ -91,6 +91,29 @@ void print(const Config& configuration)
     Serial.println();
 }
 
+void Log()
+{
+    Serial.println(F("Measurement:"));
+    Serial.print(F(" In  T: "));
+    formatNumber(measurement.Inside.Temperature, 6, 1);
+    Serial.print(F(" °C  H: "));
+    formatNumber(measurement.Inside.Humidity, 6, 0);
+    Serial.println(F(" %"));
+
+    Serial.print(F(" Out T: "));
+    formatNumber(measurement.Outside.Temperature, 6, 1);
+    Serial.print(F(" °C  H: "));
+    formatNumber(measurement.Outside.Humidity, 6, 0);
+    Serial.println(F(" %"));
+
+    Serial.println(state.Output.Reason);
+
+    // Serial.print(F(" Free memory: "));
+    // Serial.print(freeMemory());
+    // Serial.println(F(" bytes"));     
+    Serial.println();   
+}
+
 void onPressedLong()
 {
     Serial.println(F("Button pressed long"));
@@ -143,9 +166,6 @@ void setup()
     button.onPressed(onPressed);
 }
 
-
-int32_t oldPosition = 0;
-
 void loop()
 {
     const auto now = millis();
@@ -153,13 +173,6 @@ void loop()
 
     button.read();
     const auto newPosition = -(encoder.read() >> 1);
-
-    if (newPosition != oldPosition)
-    {
-        oldPosition = newPosition;
-        Serial.print(F("Rotary: "));
-        Serial.println(newPosition);
-    }
 
     display.update(newPosition);
 
@@ -176,24 +189,6 @@ void loop()
     }
 
     if (timerLog.shouldRun(now))
-    {
-        Serial.println(F("Measurement:"));
-        Serial.print(F(" In  T: "));
-        formatNumber(measurement.Inside.Temperature, 6, 1);
-        Serial.print(F(" °C  H: "));
-        formatNumber(measurement.Inside.Humidity, 6, 0);
-        Serial.println(F(" %"));
-
-        Serial.print(F(" Out T: "));
-        formatNumber(measurement.Outside.Temperature, 6, 1);
-        Serial.print(F(" °C  H: "));
-        formatNumber(measurement.Outside.Humidity, 6, 0);
-        Serial.println(F(" %"));
-
-        Serial.println(state.Output.Reason);
-
-        Serial.print(F(" Free memory: "));
-        Serial.print(freeMemory());
-        Serial.println(F(" bytes"));        
-    }
+        Log();
 }
+

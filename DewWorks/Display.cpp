@@ -151,12 +151,20 @@ void Display::lightOff()
 
 void Display::update(const long rotaryPos)
 {
-    if (!withDisplay) return;
-
     const auto now = millis();
     const bool refreshTimer = timer.shouldRun(now);
     const bool rotationInput = rotaryPos != lastRotaryPos;
     const bool refreshUi = refreshTimer || rotationInput || buttonWasPressed;
+
+    if (rotationInput)
+    {
+        lastRotaryPos = rotaryPos;
+
+        Serial.print(F("Rotary: "));
+        Serial.println(rotaryPos);
+    }
+
+    if (!withDisplay) return;
 
     if (refreshTimer)
     {
@@ -166,13 +174,6 @@ void Display::update(const long rotaryPos)
 
     if (rotationInput || buttonWasPressed)
         lightOn();
-
-    if (rotationInput)
-    {
-        lastRotaryPos = rotaryPos;
-
-        Serial.println(rotaryPos);
-    }
 
     if (rotationInput && mode == DisplayMode::Menu)
     {
