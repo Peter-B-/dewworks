@@ -145,7 +145,7 @@ void setup()
     Serial.begin(115200);
 
     EEPROM.get(0, config);
-    if (isnanf(config.DeltaDewTempMin))
+    if (isnan(config.DeltaDewTempMin))
         config = ControlLogic::getDefaultConfig();
 
     print(config);

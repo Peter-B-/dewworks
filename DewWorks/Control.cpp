@@ -60,7 +60,7 @@ bool ControlLogic::update(OperationMode mode)
 
     const ControlInput &inp = state.Input;
     const float deltaDewTemp = inp.Inside.DewPointTemperature - inp.Outside.DewPointTemperature;
-    if (isnanf(deltaDewTemp))
+    if (isnan(deltaDewTemp))
     {
         output = false;
         strcpy_P(state.Output.Reason, reason_no_data);
@@ -106,7 +106,7 @@ bool ControlLogic::update(OperationMode mode)
 
 void setDewTemperature(EnvironmentInfo &envInfo)
 {
-    if (isnanf(envInfo.Temperature) || isnanf(envInfo.Humidity))
+    if (isnan(envInfo.Temperature) || isnan(envInfo.Humidity))
         envInfo.DewPointTemperature = NAN;
 
     const float t = envInfo.Temperature;
