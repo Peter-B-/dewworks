@@ -89,12 +89,12 @@ void Output::set(const bool on) const
 
         uint16_t value;
 
-        if (!on)
+        if (!on || this->config.PwmRatio <= 0)
             value = 0;
         else if (this->config.PwmRatio >= 100)
             value = 639;
         else
-            value = this->config.PwmRatio * 6; // * 6 is an approximation of 639 / 100;
+            value = static_cast<uint16_t>(this->config.PwmRatio * 6.39f);
 
         if (this->pin == 9)
         {
@@ -107,7 +107,9 @@ void Output::set(const bool on) const
     }
     else
     {
-        const int16_t value = on ? this->config.PwmRatio * 255 / 100 : 0;
+        const int16_t value = on
+         ? static_cast<uint16_t>(this->config.PwmRatio * 2.55f) 
+         : 0;
         analogWrite(this->pin, value);
     }
 }

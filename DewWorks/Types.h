@@ -73,7 +73,7 @@ struct Config
     float HumInOffset{0};
     float HumOutOffset{0};
 
-    int16_t PwmRatio{50};
+    float PwmRatio{50};
 };
 
 #endif

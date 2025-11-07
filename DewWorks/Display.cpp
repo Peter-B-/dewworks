@@ -31,7 +31,7 @@ Display::Display(State &state, Config &config)
       timer(1000),
       config(config),
       menuItems({
-
+          MenuItem(F("Luefter Geschw."), config.PwmRatio, 0.0, 100.0, 2.0),
           MenuItem(F("K Temp innen"), config.TempInOffset, -5.0, 5.0, 0.1),
           MenuItem(F("K Temp aussen"), config.TempOutOffset, -5.0, 5.0, 0.1),
           MenuItem(F("K Feuchte innen"), config.HumInOffset, -10, 10.0, 1),

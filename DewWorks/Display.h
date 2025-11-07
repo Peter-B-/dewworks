@@ -96,8 +96,8 @@ private:
     DisplayMode mode = DisplayMode::Measurement;
 
     MenuItem *currentMenuItem;
-    const size_t menuItemCount = 12;
-    MenuItem menuItems[12];
+    const size_t menuItemCount = 13;
+    MenuItem menuItems[13];
 
     MenuSelector menuSelector;
 };
