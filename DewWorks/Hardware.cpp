@@ -108,8 +108,8 @@ void Output::set(const bool on) const
     else
     {
         const int16_t value = on
-         ? static_cast<uint16_t>(this->config.PwmRatio * 2.55f) 
-         : 0;
+                                  ? static_cast<uint16_t>(this->config.PwmRatio * 2.55f)
+                                  : 0;
         analogWrite(this->pin, value);
     }
 }

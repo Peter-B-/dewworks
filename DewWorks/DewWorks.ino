@@ -113,6 +113,13 @@ void Log()
     Serial.println();
 }
 
+// int freeMemory()
+// {
+//     extern int __heap_start, *__brkval;
+//     int v;
+//     return (int)&v - (__brkval == nullptr ? (int)&__heap_start : (int)__brkval);
+// }
+
 void onPressedLong()
 {
     Serial.println(F("Button pressed long"));
@@ -123,13 +130,6 @@ void onPressed()
 {
     Serial.println(F("Button pressed"));
     display.buttonPressed();
-}
-
-int freeMemory()
-{
-    extern int __heap_start, *__brkval;
-    int v;
-    return (int)&v - (__brkval == nullptr ? (int)&__heap_start : (int)__brkval);
 }
 
 void saveConfig()

@@ -8,7 +8,8 @@
 #include <hd44780.h>
 #include <hd44780ioClass/hd44780_I2Cexp.h>
 
-enum class DisplayMode {
+enum class DisplayMode
+{
     Measurement,
     Menu,
     ValueChange
