@@ -22,13 +22,13 @@ private:
 class Output
 {
 public:
-    explicit Output(uint8_t pin, Config& configuration);
+    explicit Output(uint8_t pin, Config &configuration);
     void begin() const;
     void set(bool on) const;
 
 private:
     uint8_t pin;
-    Config& config;
+    Config &config;
 };
 
 class ModeSwitch
@@ -41,6 +41,5 @@ public:
 private:
     uint8_t pin;
 };
-
 
 #endif

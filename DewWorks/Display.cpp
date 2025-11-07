@@ -26,7 +26,7 @@ void MenuSelector::setOffset(const long rotaryPos)
     rotaryOffset = rotaryPos - page;
 }
 
-Display::Display(State& state, Config& config)
+Display::Display(State &state, Config &config)
     : state(state),
       timer(1000),
       config(config),
@@ -55,10 +55,9 @@ void Display::begin()
         Serial.print(F("LCD init failed: "));
         Serial.println(status);
 
-        //hd44780::fatalError(status);
+        // hd44780::fatalError(status);
         withDisplay = false;
     }
-
 
     byte blank[8] = {
         B00000,
@@ -68,10 +67,8 @@ void Display::begin()
         B00000,
         B00000,
         B00000,
-        B00000
-    }; // empty character: Hack so that \0 will be printed as space
+        B00000}; // empty character: Hack so that \0 will be printed as space
     lcd.createChar(0, blank);
-
 
     byte deg[8] = {
         B00111,
@@ -81,8 +78,7 @@ void Display::begin()
         B00000,
         B00000,
         B00000,
-        B00000
-    }; // character °
+        B00000}; // character °
     lcd.createChar(1, deg);
 
     byte tau[8] = {
@@ -93,8 +89,7 @@ void Display::begin()
         B00100,
         B00100,
         B00110,
-        B00000
-    }; // character tau
+        B00000}; // character tau
     lcd.createChar(2, tau);
 
     byte left[8] = {
@@ -105,8 +100,7 @@ void Display::begin()
         B01111,
         B00111,
         B00011,
-        B00001
-    }; // left arrow
+        B00001}; // left arrow
     lcd.createChar(3, left);
 
     byte right[8] = {
@@ -117,8 +111,7 @@ void Display::begin()
         B11110,
         B11100,
         B11000,
-        B10000
-    }; // right arrow
+        B10000}; // right arrow
     lcd.createChar(4, right);
 
     byte delta[8] = {
@@ -129,8 +122,7 @@ void Display::begin()
         B10001,
         B10001,
         B11111,
-        B00000
-    }; // Delta
+        B00000}; // Delta
     lcd.createChar(5, delta);
 }
 
@@ -162,7 +154,8 @@ void Display::update(const long rotaryPos)
         Serial.println(rotaryPos);
     }
 
-    if (!withDisplay) return;
+    if (!withDisplay)
+        return;
 
     if (refreshTimer)
     {
@@ -211,7 +204,8 @@ void Display::selectMenu()
 
 void Display::buttonPressed()
 {
-    if (!withDisplay) return;
+    if (!withDisplay)
+        return;
 
     if (mode == DisplayMode::Menu)
     {
@@ -228,7 +222,8 @@ void Display::buttonPressed()
 
 void Display::buttonPressedLong()
 {
-    if (!withDisplay) return;
+    if (!withDisplay)
+        return;
 
     if (mode == DisplayMode::Measurement)
         selectMenu();
@@ -255,7 +250,7 @@ void Display::lightOn()
     lightOnTime = millis();
 }
 
-void printNumber(char* dest, const float no, const int8_t digitsBeforeDot, const int8_t digitsAfterDot)
+void printNumber(char *dest, const float no, const int8_t digitsBeforeDot, const int8_t digitsAfterDot)
 {
     char buffer[40];
 
@@ -269,11 +264,11 @@ void printNumber(char* dest, const float no, const int8_t digitsBeforeDot, const
     strncpy(dest, buffer, size);
 }
 
-void Display::showMeasurement(const __FlashStringHelper* id, const EnvironmentInfo envInfo)
+void Display::showMeasurement(const __FlashStringHelper *id, const EnvironmentInfo envInfo)
 {
     clearBuffer();
 
-    strcpy_P(lcdBuffer, (const char*)id);
+    strcpy_P(lcdBuffer, (const char *)id);
     printNumber(lcdBuffer + 9, envInfo.DewPointTemperature, 3, 1);
     lcdBuffer[8] = 2;
     lcdBuffer[14] = 1;
@@ -314,9 +309,9 @@ void Display::showState()
 {
     clearBuffer();
     if (state.Output.State)
-        strcpy_P(lcdBuffer, (const char*)(F("An")));
+        strcpy_P(lcdBuffer, (const char *)(F("An")));
     else
-        strcpy_P(lcdBuffer, (const char*)(F("Aus")));
+        strcpy_P(lcdBuffer, (const char *)(F("Aus")));
 
     lcd.setCursor(0, 0);
     lcd.write(lcdBuffer, 16);
@@ -376,7 +371,8 @@ MenuItem::MenuItem(const __FlashStringHelper *name)
 
 void MenuItem::select(const long rotaryPos)
 {
-    if (isResetDefault) return;
+    if (isResetDefault)
+        return;
 
     this->initialRotaryPos = rotaryPos;
     this->initialValue = value;
@@ -384,7 +380,8 @@ void MenuItem::select(const long rotaryPos)
 
 void MenuItem::update(const long rotrayPos) const
 {
-    if (isResetDefault) return;
+    if (isResetDefault)
+        return;
 
     float v = static_cast<float>(rotrayPos - initialRotaryPos) * factor + initialValue;
 
@@ -396,12 +393,12 @@ void MenuItem::update(const long rotrayPos) const
     value = v;
 }
 
-void MenuItem::printHeader(char* buffer) const
+void MenuItem::printHeader(char *buffer) const
 {
     strcpy_P(buffer, (const char *)name);
 }
 
-void MenuItem::printValue(char* buffer) const
+void MenuItem::printValue(char *buffer) const
 {
     if (isResetDefault)
     {

@@ -1,7 +1,7 @@
 #include "Control.h"
 #include "arduino.h"
 
-ControlLogic::ControlLogic(State& state, Config& configuration) : state(state), config(configuration)
+ControlLogic::ControlLogic(State &state, Config &configuration) : state(state), config(configuration)
 {
 }
 
@@ -14,7 +14,6 @@ constexpr char reason_temp_out[] PROGMEM = "Aussentemp";
 constexpr char reason_humidity[] PROGMEM = "Luftfeuchte";
 constexpr char reason_mode_off[] PROGMEM = "Modus: Aus";
 constexpr char reason_mode_on[] PROGMEM = "Modus: An";
-
 
 void ControlLogic::begin() const
 {
@@ -59,7 +58,7 @@ bool ControlLogic::update(OperationMode mode)
 
     bool output = state.Output.State;
 
-    const ControlInput& inp = state.Input;
+    const ControlInput &inp = state.Input;
     const float deltaDewTemp = inp.Inside.DewPointTemperature - inp.Outside.DewPointTemperature;
     if (isnanf(deltaDewTemp))
     {
@@ -105,8 +104,7 @@ bool ControlLogic::update(OperationMode mode)
     return output;
 }
 
-
-void setDewTemperature(EnvironmentInfo& envInfo)
+void setDewTemperature(EnvironmentInfo &envInfo)
 {
     if (isnanf(envInfo.Temperature) || isnanf(envInfo.Humidity))
         envInfo.DewPointTemperature = NAN;
@@ -142,7 +140,7 @@ void setDewTemperature(EnvironmentInfo& envInfo)
     envInfo.DewPointTemperature = tt;
 }
 
-void ControlLogic::setMeasurement(const Measurement& meas)
+void ControlLogic::setMeasurement(const Measurement &meas)
 {
     state.Input.Inside.Temperature = meas.Inside.Temperature + config.TempInOffset;
     state.Input.Inside.Humidity = meas.Inside.Humidity + config.HumInOffset;

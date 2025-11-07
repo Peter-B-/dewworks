@@ -21,20 +21,20 @@ namespace DisplayMode
 class MenuItem
 {
 public:
-    MenuItem(const __FlashStringHelper* name, float& value, float min, float max, float factor);
-    MenuItem(const __FlashStringHelper* name);
+    MenuItem(const __FlashStringHelper *name, float &value, float min, float max, float factor);
+    MenuItem(const __FlashStringHelper *name);
 
     void select(long rotaryPos);
 
     void update(long rotrayPos) const;
-    void printHeader(char* buffer) const;
-    void printValue(char* buffer) const;
+    void printHeader(char *buffer) const;
+    void printValue(char *buffer) const;
 
     const bool isResetDefault;
 
 private:
-    const __FlashStringHelper* name;
-    float& value;
+    const __FlashStringHelper *name;
+    float &value;
     float initialValue;
     float minimum, maximum, factor;
     long initialRotaryPos;
@@ -54,13 +54,12 @@ private:
     const unsigned int pages;
 };
 
-
 class Display
 {
 public:
-    using callback_t = void(*)();
+    using callback_t = void (*)();
 
-    Display(State& state, Config& config);
+    Display(State &state, Config &config);
     void begin();
     void selectMenuitem(long rotaryPos);
     void lightOff();
@@ -73,19 +72,19 @@ public:
     void onSaveConfig(callback_t callback);
 
 private:
-    State& state;
+    State &state;
 
     bool withDisplay = true;
 
     hd44780_I2Cexp lcd;
     Timer timer;
     char lcdBuffer[20];
-    Config& config;
+    Config &config;
     volatile bool buttonWasPressed = false;
     callback_t saveConfigCallback = nullptr;
 
     void showMeasurementPage(long rotaryPos);
-    void showMeasurement(const __FlashStringHelper* id, EnvironmentInfo envInfo);
+    void showMeasurement(const __FlashStringHelper *id, EnvironmentInfo envInfo);
     void showState();
 
     void showMenu(long rotaryPos);
@@ -100,7 +99,7 @@ private:
     long lastRotaryPos = 0;
     DisplayMode::Mode mode = DisplayMode::Measurement;
 
-    MenuItem* currentMenuItem;
+    MenuItem *currentMenuItem;
     const size_t menuItemCount = 12;
     MenuItem menuItems[12];
 

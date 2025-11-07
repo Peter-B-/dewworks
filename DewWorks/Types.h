@@ -34,7 +34,8 @@ struct ControlOutput
     char Reason[20]{};
 };
 
-enum class OperationMode {
+enum class OperationMode
+{
     Off,
     Auto,
     On
@@ -66,6 +67,5 @@ struct Config
 
     int16_t PwmRatio{50};
 };
-
 
 #endif

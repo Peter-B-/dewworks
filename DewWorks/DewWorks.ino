@@ -1,8 +1,8 @@
 #include <EEPROM.h>
 #include <avr/wdt.h>
 
-#include <EasyButton.h>   // library EasyButton
-#include <Encoder.h>      // library Encoder
+#include <EasyButton.h> // library EasyButton
+#include <Encoder.h>    // library Encoder
 
 #include "Types.h"
 #include "Hardware.h"
@@ -20,7 +20,6 @@ constexpr int OUTPUT_PIN = 9;
 constexpr int SENSOR_IN = 6;
 constexpr int SENSOR_OUT = 7;
 constexpr int SWITCH = A0;
-
 
 Measurement measurement{};
 State state;
@@ -46,7 +45,7 @@ void formatNumber(const float input, const byte columns, const byte places)
     Serial.print(buffer);
 }
 
-void print(const Config& configuration)
+void print(const Config &configuration)
 {
     Serial.println();
     Serial.println(F("Configuration"));
@@ -110,8 +109,8 @@ void Log()
 
     // Serial.print(F(" Free memory: "));
     // Serial.print(freeMemory());
-    // Serial.println(F(" bytes"));     
-    Serial.println();   
+    // Serial.println(F(" bytes"));
+    Serial.println();
 }
 
 void onPressedLong()
@@ -132,7 +131,6 @@ int freeMemory()
     int v;
     return (int)&v - (__brkval == nullptr ? (int)&__heap_start : (int)__brkval);
 }
-
 
 void saveConfig()
 {
@@ -191,4 +189,3 @@ void loop()
     if (timerLog.shouldRun(now))
         Log();
 }
-
