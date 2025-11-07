@@ -5,8 +5,7 @@ ControlLogic::ControlLogic(State &state, Config &configuration) : state(state), 
 {
 }
 
-constexpr char reason_off[] PROGMEM = "Noch aus";
-constexpr char reason_on[] PROGMEM = "Alles Top!";
+constexpr char reason_on[] PROGMEM = "Alles L\xE1uft!";
 constexpr char reason_no_data[] PROGMEM = "Keine Daten";
 constexpr char reason_dew[] PROGMEM = "Taupunkt";
 constexpr char reason_temp_in[] PROGMEM = "Innentemp";
@@ -17,7 +16,7 @@ constexpr char reason_mode_on[] PROGMEM = "Modus: An";
 
 void ControlLogic::begin() const
 {
-    strcpy_P(state.Output.Reason, reason_off);
+    strcpy_P(state.Output.Reason, reason_dew);
 }
 
 bool ControlLogic::update(OperationMode mode)
@@ -32,8 +31,10 @@ bool ControlLogic::update(OperationMode mode)
             Serial.println(F("Off"));
             break;
         case OperationMode::Auto:
-            // set it to "still off" until we evaluate the conditions
-            strcpy_P(state.Output.Reason, reason_off);
+            if (state.Output.State)
+                strcpy_P(state.Output.Reason, reason_on);
+            else
+                strcpy_P(state.Output.Reason, reason_dew);
             Serial.println(F("Auto"));
             break;
         case OperationMode::On:
