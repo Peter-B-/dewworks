@@ -8,15 +8,11 @@
 #include <hd44780.h>
 #include <hd44780ioClass/hd44780_I2Cexp.h>
 
-namespace DisplayMode
-{
-    enum Mode
-    {
-        Measurement,
-        Menu,
-        ValueChange
-    };
-}
+enum class DisplayMode {
+    Measurement,
+    Menu,
+    ValueChange
+};
 
 class MenuItem
 {
@@ -97,7 +93,7 @@ private:
     unsigned long lightOnLimit = 60000;
 
     long lastRotaryPos = 0;
-    DisplayMode::Mode mode = DisplayMode::Measurement;
+    DisplayMode mode = DisplayMode::Measurement;
 
     MenuItem *currentMenuItem;
     const size_t menuItemCount = 12;
