@@ -31,17 +31,19 @@ Display::Display(State &state, Config &config)
       timer(1000),
       config(config),
       menuItems(
-          {MenuItem(F("Luefter Geschw."), config.PwmRatio, 0.0, 100.0, 2.0),
+          {MenuItem(F("L\xF5"
+                      "fter Geschw."),
+                    config.PwmRatio, 0.0, 100.0, 2.0),
            MenuItem(F("K Temp innen"), config.TempInOffset, -5.0, 5.0, 0.1),
-           MenuItem(F("K Temp aussen"), config.TempOutOffset, -5.0, 5.0, 0.1),
+           MenuItem(F("K Temp au\1en"), config.TempOutOffset, -5.0, 5.0, 0.1),
            MenuItem(F("K Feuchte innen"), config.HumInOffset, -10, 10.0, 1),
-           MenuItem(F("K Feuchte aussen"), config.HumOutOffset, -10.0, 10.0, 1),
+           MenuItem(F("K Feuchte au\1en"), config.HumOutOffset, -10.0, 10.0, 1),
            MenuItem(F("\5\2. Minimum"), config.DeltaDewTempMin, 0.0, 10.0, 0.2),
            MenuItem(F("\5\2. Hysterese"), config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
            MenuItem(F("Feuchte inn min"), config.HumInMin, 10.0, 80.0, 1),
            MenuItem(F("Feuchte Hyst"), config.HumInHyst, 0.0, 10.0, 0.2),
            MenuItem(F("Temp innen min"), config.TempInMin, -20.0, 25.0, 1),
-           MenuItem(F("Temp aussen min"), config.TempOutMin, -20.0, 25.0, 1),
+           MenuItem(F("Temp au\1en min"), config.TempOutMin, -20.0, 25.0, 1),
            MenuItem(F("Temp Hysterese"), config.TempHyst, 0.0, 5.0, 0.2),
            MenuItem(F("Wiederherstellen"))}),
       menuSelector(menuItemCount) {
@@ -70,16 +72,16 @@ void Display::begin()
         B00000}; // empty character: Hack so that \0 will be printed as space
     lcd.createChar(0, blank);
 
-    byte deg[8] = {
-        B00111,
-        B00101,
-        B00111,
-        B0000,
-        B00000,
-        B00000,
-        B00000,
-        B00000}; // character °
-    lcd.createChar(1, deg);
+    byte ss[8] = {
+        B01110,
+        B10001,
+        B10001,
+        B10110,
+        B10001,
+        B10001,
+        B10110,
+        B10000};
+    lcd.createChar(1, ss);
 
     byte tau[8] = {
         B00000,
@@ -271,7 +273,7 @@ void Display::showMeasurement(const __FlashStringHelper *id, const EnvironmentIn
     strcpy_P(lcdBuffer, (const char *)id);
     printNumber(lcdBuffer + 9, envInfo.DewPointTemperature, 3, 1);
     lcdBuffer[8] = 2;
-    lcdBuffer[14] = 1;
+    lcdBuffer[14] = '\xDF';
     lcdBuffer[15] = 'C';
 
     lcd.setCursor(0, 0);
@@ -286,7 +288,7 @@ void Display::showMeasurement(const __FlashStringHelper *id, const EnvironmentIn
 
     lcdBuffer[8] = 'T';
     printNumber(lcdBuffer + 9, envInfo.Temperature, 3, 1);
-    lcdBuffer[14] = 1;
+    lcdBuffer[14] = '\xDF';
     lcdBuffer[15] = 'C';
 
     lcd.setCursor(0, 1);
@@ -300,7 +302,7 @@ void Display::showMeasurementPage(const long rotaryPos)
     if (page == 0)
         showMeasurement(F("Innen"), this->state.Input.Inside);
     else if (page == 1)
-        showMeasurement(F("Aussen"), this->state.Input.Outside);
+        showMeasurement(F("Au\1en"), this->state.Input.Outside);
     else
         showState();
 }
