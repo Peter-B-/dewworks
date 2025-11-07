@@ -32,22 +32,20 @@ Display::Display(State& state, Config& config)
       config(config),
       menuItems({
 
-          MenuItem(PSTR("K Temp innen"), config.TempInOffset, -5.0, 5.0, 0.1),
-          MenuItem(PSTR("K Temp aussen"), config.TempOutOffset, -5.0, 5.0, 0.1),
-          MenuItem(PSTR("K Feuchte innen"), config.HumInOffset, -10, 10.0, 1),
-          MenuItem(PSTR("K Feuchte aussen"), config.HumOutOffset, -10.0, 10.0, 1),
-          MenuItem(PSTR("\5\2. Minimum"), config.DeltaDewTempMin, 0.0, 10.0, 0.2),
-          MenuItem(PSTR("\5\2. Hysterese"), config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
-          MenuItem(PSTR("Feuchte inn min"), config.HumInMin, 10.0, 80.0, 1),
-          MenuItem(PSTR("Feuchte Hyst"), config.HumInHyst, 0.0, 10.0, 0.2),
-          MenuItem(PSTR("Temp innen min"), config.TempInMin, -20.0, 25.0, 1),
-          MenuItem(PSTR("Temp aussen min"), config.TempOutMin, -20.0, 25.0, 1),
-          MenuItem(PSTR("Temp Hysterese"), config.TempHyst, 0.0, 5.0, 0.2),
-          MenuItem(PSTR("Wiederherstellen"))
-      }),
-      menuSelector(menuItemCount)
-{
-};
+          MenuItem(F("K Temp innen"), config.TempInOffset, -5.0, 5.0, 0.1),
+          MenuItem(F("K Temp aussen"), config.TempOutOffset, -5.0, 5.0, 0.1),
+          MenuItem(F("K Feuchte innen"), config.HumInOffset, -10, 10.0, 1),
+          MenuItem(F("K Feuchte aussen"), config.HumOutOffset, -10.0, 10.0, 1),
+          MenuItem(F("\5\2. Minimum"), config.DeltaDewTempMin, 0.0, 10.0, 0.2),
+          MenuItem(F("\5\2. Hysterese"), config.DeltaDewTempHyst, 0.0, 5.0, 0.2),
+          MenuItem(F("Feuchte inn min"), config.HumInMin, 10.0, 80.0, 1),
+          MenuItem(F("Feuchte Hyst"), config.HumInHyst, 0.0, 10.0, 0.2),
+          MenuItem(F("Temp innen min"), config.TempInMin, -20.0, 25.0, 1),
+          MenuItem(F("Temp aussen min"), config.TempOutMin, -20.0, 25.0, 1),
+          MenuItem(F("Temp Hysterese"), config.TempHyst, 0.0, 5.0, 0.2),
+          MenuItem(F("Wiederherstellen"))}),
+      menuSelector(menuItemCount) {
+      };
 
 void Display::begin()
 {
@@ -356,7 +354,7 @@ void Display::clearBuffer()
         lcdBuffer[i] = ' ';
 }
 
-MenuItem::MenuItem(const char* name, float& value, const float minimum, const float maximum, const float factor)
+MenuItem::MenuItem(const __FlashStringHelper *name, float &value, const float minimum, const float maximum, const float factor)
     : isResetDefault(false),
       name(name),
       value(value),
@@ -368,7 +366,7 @@ MenuItem::MenuItem(const char* name, float& value, const float minimum, const fl
 {
 }
 
-MenuItem::MenuItem(const char* name)
+MenuItem::MenuItem(const __FlashStringHelper *name)
     : isResetDefault(true),
       name(name),
       value(minimum), initialValue(0), minimum(0), maximum(0), factor(0),
@@ -400,7 +398,7 @@ void MenuItem::update(const long rotrayPos) const
 
 void MenuItem::printHeader(char* buffer) const
 {
-    strcpy_P(buffer, name);
+    strcpy_P(buffer, (const char *)name);
 }
 
 void MenuItem::printValue(char* buffer) const
