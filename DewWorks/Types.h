@@ -34,6 +34,7 @@ struct ControlOutput
     char Reason[20]{};
 };
 
+/// @brief Operation mode is selected by a hardware switch.
 enum class OperationMode
 {
     Off,
