@@ -39,11 +39,13 @@ Output output(PIN_OUTPUT, config);
 Display display(state, config);
 ControlLogic control(state, config);
 
-Timer timerMeasure(300);
-Timer timerLog(10000);
+Timer timerMeasure(300ul);
+Timer timerLog(30 * 1000ul);
 
 // Update counter for fan runtime every minute
-Timer timerFanRuntime(60000);
+Timer timerFanRuntime(60 * 1000ul);
+// Advance the 24h timer slot every hour
+Timer timerFanRuntimeSlot(60 * 60 * 1000ul);
 
 // Keep track of last stored fan runtime in hours.
 // Only write to EEPROM if the value has changed.
@@ -162,7 +164,7 @@ void LoadConfig()
     print(config);
 }
 
-uint32_t LoadFanRuntime()
+void LoadFanRuntime()
 {
     EEPROM.get(FAN_RUNTIME_EEPROM_ADDR, fanRuntimeHours_LastStored);
     if (fanRuntimeHours_LastStored > FAN_RUNTIME_MAX)
@@ -174,14 +176,21 @@ uint32_t LoadFanRuntime()
     Serial.print(F("Fan runtime: "));
     Serial.print(fanRuntimeHours_LastStored);
     Serial.println(F(" h"));
-    return fanRuntimeHours_LastStored * 60;
+
+    state.FanRuntime.TotalMinutes = fanRuntimeHours_LastStored * 60;
 }
 
 void UpdateFanRuntime()
 {
-    state.FanRuntimeMinutes++;
-    auto fanRuntimeHours = state.FanRuntimeMinutes / 60;
+    // Increment total minutes
+    state.FanRuntime.TotalMinutes++;
 
+    // Update current hour slot in Last24hMinutes
+    auto idx = state.FanRuntime.Last24hIndex;
+    state.FanRuntime.Last24hMinutes[idx]++;
+
+    // Persist total runtime in EEPROM every hour
+    auto fanRuntimeHours = state.FanRuntime.TotalMinutes / 60;
     if (fanRuntimeHours != fanRuntimeHours_LastStored)
     {
         fanRuntimeHours_LastStored = fanRuntimeHours;
@@ -189,6 +198,13 @@ void UpdateFanRuntime()
     }
 }
 
+void AdvanceFanRuntimeSlot()
+{
+    // Advance the 24h timer slot every hour
+    state.FanRuntime.Last24hIndex = (state.FanRuntime.Last24hIndex + 1) % 24;
+    // Clear the current slot
+    state.FanRuntime.Last24hMinutes[state.FanRuntime.Last24hIndex] = 0;
+}
 
 void setup()
 {
@@ -197,7 +213,7 @@ void setup()
     Serial.begin(115200);
 
     LoadConfig();
-    state.FanRuntimeMinutes = LoadFanRuntime();
+    LoadFanRuntime();
 
     control.begin();
 
@@ -235,10 +251,11 @@ void loop()
         output.set(outputEnabled);
 
         if (timerFanRuntime.shouldRun(now) && outputEnabled)
-        {
             UpdateFanRuntime();
-        }
     }
+
+    if (timerFanRuntimeSlot.shouldRun(now))
+        AdvanceFanRuntimeSlot();
 
     if (timerLog.shouldRun(now))
         Log();

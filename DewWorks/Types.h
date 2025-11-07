@@ -42,12 +42,23 @@ enum class OperationMode
     On
 };
 
+
+struct FanRuntimeStats
+{
+    uint32_t TotalMinutes{0};
+
+    // 24 slots to store the last 24 hours of fan runtime
+    uint8_t Last24hMinutes[24]{};
+    // Index of the current slot (0-23)
+    uint8_t Last24hIndex{0};
+};
+
 struct State
 {
     ControlInput Input{};
     ControlOutput Output{};
     OperationMode Mode{OperationMode::Auto};
-    uint32_t FanRuntimeMinutes{0};
+    FanRuntimeStats FanRuntime{};
 };
 
 constexpr uint16_t CONFIG_VERSION = 1;

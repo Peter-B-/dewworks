@@ -324,9 +324,19 @@ void Display::showState()
     else
         strcpy_P(lcdBuffer, (const char *)(F("Aus")));
 
-    // print state.FanRuntimeMinutes as "h:mm", right aligned (hours may be up to 100000)
-    char timeStr[12];
-    snprintf(timeStr, sizeof(timeStr), "%lu:%02lu", (unsigned long)(state.FanRuntimeMinutes / 60), (unsigned long)(state.FanRuntimeMinutes % 60));
+    // Display "<totalHours> <hoursLast24>:<minutesLast24>" right aligned
+    uint32_t totalMinutes = state.FanRuntime.TotalMinutes;
+    uint32_t totalHours = totalMinutes / 60;
+
+    // Calculate last 24h runtime
+    uint16_t last24Minutes = 0;
+    for (int i = 0; i < 24; ++i)
+        last24Minutes += state.FanRuntime.Last24hMinutes[i];
+    uint16_t last24Hours = last24Minutes / 60;
+    uint16_t last24RemMinutes = last24Minutes % 60;
+
+    char timeStr[16];
+    snprintf(timeStr, sizeof(timeStr), "%luh %u:%02u", (unsigned long)totalHours, last24Hours, last24RemMinutes);
     int len = strlen(timeStr);
     memcpy(lcdBuffer + (16 - len), timeStr, len);
 
