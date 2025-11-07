@@ -47,6 +47,7 @@ struct State
     ControlInput Input{};
     ControlOutput Output{};
     OperationMode Mode{OperationMode::Auto};
+    uint32_t FanRuntimeMinutes{0};
 };
 
 constexpr uint16_t CONFIG_VERSION = 1;

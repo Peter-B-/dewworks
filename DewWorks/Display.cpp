@@ -299,12 +299,21 @@ void Display::showMeasurementPage(const long rotaryPos)
 {
     const auto page = getPageModulo(rotaryPos, 3);
 
-    if (page == 0)
+    switch (page)
+    {
+    case 0:
         showMeasurement(F("Innen"), this->state.Input.Inside);
-    else if (page == 1)
+        break;
+    case 1:
         showMeasurement(F("Au\1en"), this->state.Input.Outside);
-    else
+        break;
+    case 2:
         showState();
+        break;
+
+    default:
+        break;
+    }
 }
 
 void Display::showState()
@@ -314,6 +323,12 @@ void Display::showState()
         strcpy_P(lcdBuffer, (const char *)(F("An")));
     else
         strcpy_P(lcdBuffer, (const char *)(F("Aus")));
+
+    // print state.FanRuntimeMinutes as "h:mm", right aligned (hours may be up to 100000)
+    char timeStr[12];
+    snprintf(timeStr, sizeof(timeStr), "%lu:%02lu", (unsigned long)(state.FanRuntimeMinutes / 60), (unsigned long)(state.FanRuntimeMinutes % 60));
+    int len = strlen(timeStr);
+    memcpy(lcdBuffer + (16 - len), timeStr, len);
 
     lcd.setCursor(0, 0);
     lcd.write(lcdBuffer, 16);

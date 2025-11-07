@@ -13,30 +13,41 @@
 constexpr int LCD_COLS = 16;
 constexpr int LCD_ROWS = 2;
 
-constexpr int ENC_CLK = 3;
-constexpr int ENC_DT = 2;
-constexpr int ENC_SW = 4;
-constexpr int OUTPUT_PIN = 9;
-constexpr int SENSOR_IN = 6;
-constexpr int SENSOR_OUT = 7;
-constexpr int SWITCH = A0;
+constexpr int PIN_ENC_CLK = 3;
+constexpr int PIN_ENC_DT = 2;
+constexpr int PIN_ENC_SW = 4;
+constexpr int PIN_OUTPUT = 9;
+constexpr int PIN_SENSOR_IN = 6;
+constexpr int PIN_SENSOR_OUT = 7;
+constexpr int PIN_SWITCH = A0;
+
+constexpr int FAN_RUNTIME_EEPROM_ADDR = 128;
+constexpr uint32_t FAN_RUNTIME_UNINITIALIZED = 0xFFFFFFFF;
+constexpr uint32_t FAN_RUNTIME_MAX = 1000000; // 1 million hours, adjust as needed
 
 Measurement measurement{};
 State state;
 Config config;
 
-Encoder encoder(ENC_DT, ENC_CLK);
-EasyButton button(ENC_SW);
-DhtSensor dhtIn(SENSOR_IN);
-DhtSensor dhtOut(SENSOR_OUT);
-ModeSwitch modeSwitch(SWITCH);
+Encoder encoder(PIN_ENC_DT, PIN_ENC_CLK);
+EasyButton button(PIN_ENC_SW);
+DhtSensor dhtIn(PIN_SENSOR_IN);
+DhtSensor dhtOut(PIN_SENSOR_OUT);
+ModeSwitch modeSwitch(PIN_SWITCH);
 
-Output output(OUTPUT_PIN, config);
+Output output(PIN_OUTPUT, config);
 Display display(state, config);
 ControlLogic control(state, config);
 
 Timer timerMeasure(300);
-Timer timerLog(5000);
+Timer timerLog(10000);
+
+// Update counter for fan runtime every minute
+Timer timerFanRuntime(60000);
+
+// Keep track of last stored fan runtime in hours.
+// Only write to EEPROM if the value has changed.
+uint32_t fanRuntimeHours_LastStored = 0;
 
 void formatNumber(const float input, const byte columns, const byte places)
 {
@@ -138,12 +149,8 @@ void saveConfig()
     EEPROM.put(0, config);
 }
 
-void setup()
+void LoadConfig()
 {
-    wdt_enable(WDTO_2S); // Set watchdog to 2 seconds
-
-    Serial.begin(115200);
-
     EEPROM.get(0, config);
     if (config.Version != CONFIG_VERSION || isnan(config.DeltaDewTempMin))
     {
@@ -153,6 +160,44 @@ void setup()
     }
 
     print(config);
+}
+
+uint32_t LoadFanRuntime()
+{
+    EEPROM.get(FAN_RUNTIME_EEPROM_ADDR, fanRuntimeHours_LastStored);
+    if (fanRuntimeHours_LastStored > FAN_RUNTIME_MAX)
+    {
+        fanRuntimeHours_LastStored = 0;
+        EEPROM.put(FAN_RUNTIME_EEPROM_ADDR, fanRuntimeHours_LastStored);
+    }
+
+    Serial.print(F("Fan runtime: "));
+    Serial.print(fanRuntimeHours_LastStored);
+    Serial.println(F(" h"));
+    return fanRuntimeHours_LastStored * 60;
+}
+
+void UpdateFanRuntime()
+{
+    state.FanRuntimeMinutes++;
+    auto fanRuntimeHours = state.FanRuntimeMinutes / 60;
+
+    if (fanRuntimeHours != fanRuntimeHours_LastStored)
+    {
+        fanRuntimeHours_LastStored = fanRuntimeHours;
+        EEPROM.put(FAN_RUNTIME_EEPROM_ADDR, fanRuntimeHours_LastStored);
+    }
+}
+
+
+void setup()
+{
+    wdt_enable(WDTO_2S); // Set watchdog to 2 seconds
+
+    Serial.begin(115200);
+
+    LoadConfig();
+    state.FanRuntimeMinutes = LoadFanRuntime();
 
     control.begin();
 
@@ -188,6 +233,11 @@ void loop()
         control.setMeasurement(measurement);
         const auto outputEnabled = control.update(mode);
         output.set(outputEnabled);
+
+        if (timerFanRuntime.shouldRun(now) && outputEnabled)
+        {
+            UpdateFanRuntime();
+        }
     }
 
     if (timerLog.shouldRun(now))
