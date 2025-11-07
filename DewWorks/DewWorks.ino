@@ -145,8 +145,12 @@ void setup()
     Serial.begin(115200);
 
     EEPROM.get(0, config);
-    if (isnan(config.DeltaDewTempMin))
+    if (config.Version != CONFIG_VERSION || isnan(config.DeltaDewTempMin))
+    {
+        Serial.println(F("Invalid or missing config, loading defaults"));
         config = ControlLogic::getDefaultConfig();
+        saveConfig();
+    }
 
     print(config);
 

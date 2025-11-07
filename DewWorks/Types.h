@@ -48,8 +48,15 @@ struct State
     OperationMode Mode{OperationMode::Auto};
 };
 
+constexpr uint16_t CONFIG_VERSION = 1;
+
 struct Config
 {
+    // Version will be used to detect incompatible changes
+    // when loading from EEPROM after a firmware update.
+    // Increment this if you change the struct layout
+    uint16_t Version{CONFIG_VERSION};
+
     float DeltaDewTempMin{5};
     float DeltaDewTempHyst{1};
 
