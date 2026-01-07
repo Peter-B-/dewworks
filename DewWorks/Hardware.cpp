@@ -129,9 +129,9 @@ OperationMode ModeSwitch::read() const
     const int switchValue = analogRead(this->pin);
 
     if (switchValue < 341)
-        return OperationMode::Off;
-    else if (switchValue < 682)
-        return OperationMode::Auto;
-    else
         return OperationMode::On;
+    else if (switchValue < 682)
+        return OperationMode::Off;
+    else
+        return OperationMode::Auto;
 }
